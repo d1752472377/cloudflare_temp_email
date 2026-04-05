@@ -92,6 +92,7 @@ const getOpenSettings = async (message, notification) => {
             cfTurnstileSiteKey: res["cfTurnstileSiteKey"] || "",
             enableWebhook: res["enableWebhook"] || false,
             isS3Enabled: res["isS3Enabled"] || false,
+            enableSendMail: res["enableSendMail"] || false,
             enableAddressPassword: res["enableAddressPassword"] || false,
             statusUrl: res["statusUrl"] || "",
             enableGlobalTurnstileCheck: res["enableGlobalTurnstileCheck"] || false,

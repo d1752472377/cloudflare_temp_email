@@ -349,11 +349,34 @@ export const checkUserPassword = (password: string) => {
     return true;
 }
 
+export const isSha256Hex = (value: string): boolean => {
+    return /^[a-f0-9]{64}$/i.test(value);
+}
+
 export const hashPassword = async (password: string): Promise<string> => {
     // use crypto to hash password
     const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password));
     const hashArray = Array.from(new Uint8Array(digest));
     return hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+export const normalizePasswordForStorage = async (password: string): Promise<string> => {
+    checkUserPassword(password);
+    if (isSha256Hex(password)) {
+        return password.toLowerCase();
+    }
+    return await hashPassword(password);
+}
+
+export const verifyStoredPassword = async (
+    storedPassword: string | null | undefined,
+    inputPassword: string | null | undefined
+): Promise<boolean> => {
+    if (!storedPassword || !inputPassword) {
+        return false;
+    }
+    const normalizedInput = await normalizePasswordForStorage(inputPassword);
+    return storedPassword.toLowerCase() === normalizedInput;
 }
 
 export const getMaxAddressCount = async (

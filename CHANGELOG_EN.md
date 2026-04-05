@@ -12,6 +12,9 @@
 
 ### Bug Fixes
 
+- fix: |Login| Switch mailbox login to the default “email + password” flow while keeping JWT as the underlying session token, instead of treating pasted credential/JWT as the primary frontend login path
+- fix: |Address Password| Unify mailbox password update, login verification, and admin reset storage rules so hashed frontend input is handled consistently and password comparison no longer drifts across flows
+
 ### Improvements
 
 ## v1.5.0(main)

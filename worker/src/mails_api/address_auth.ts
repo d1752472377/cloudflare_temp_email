@@ -1,6 +1,6 @@
 import { Context } from 'hono';
 import i18n from '../i18n';
-import utils, { getBooleanValue, hashPassword, checkCfTurnstile } from '../utils';
+import utils, { getBooleanValue, checkCfTurnstile, normalizePasswordForStorage, verifyStoredPassword } from '../utils';
 import { Jwt } from 'hono/utils/jwt';
 
 export default {
@@ -24,9 +24,10 @@ export default {
         }
 
         // 更新密码
+        const normalizedPassword = await normalizePasswordForStorage(new_password);
         const { success } = await c.env.DB.prepare(
             `UPDATE address SET password = ?, updated_at = datetime('now') WHERE id = ?`
-        ).bind(new_password, address_id).run();
+        ).bind(normalizedPassword, address_id).run();
 
         if (!success) {
             return c.text(msgs.FailedUpdatePasswordMsg, 500);
@@ -68,7 +69,7 @@ export default {
         }
 
         // 验证密码
-        if (address.password !== password) {
+        if (!(await verifyStoredPassword(address.password, password))) {
             return c.text(msgs.InvalidEmailOrPasswordMsg, 401);
         }
 

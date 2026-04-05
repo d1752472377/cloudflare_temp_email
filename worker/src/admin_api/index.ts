@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { Jwt } from 'hono/utils/jwt'
 
 import i18n from '../i18n'
-import { sendAdminInternalMail, getJsonSetting, saveSetting, getUserRoles, getBooleanValue, hashPassword } from '../utils'
+import { sendAdminInternalMail, getJsonSetting, saveSetting, getUserRoles, getBooleanValue, normalizePasswordForStorage } from '../utils'
 import { newAddress, handleListQuery, getAddressCreationSettings, getAddressCreationSubdomainMatchStatus } from '../common'
 import { CONSTANTS } from '../constants'
 import cleanup_api from './cleanup_api'
@@ -204,10 +204,10 @@ api.post('/admin/address/:id/reset_password', async (c) => {
         return c.text(msgs.NewPasswordRequiredMsg, 400);
     }
 
-    const hashedPassword = await hashPassword(password);
+    const normalizedPassword = await normalizePasswordForStorage(password);
     const { success } = await c.env.DB.prepare(
         `UPDATE address SET password = ?, updated_at = datetime('now') WHERE id = ?`
-    ).bind(hashedPassword, id).run();
+    ).bind(normalizedPassword, id).run();
 
     if (!success) {
         return c.text(msgs.FailedUpdatePasswordMsg, 500);

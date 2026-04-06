@@ -390,7 +390,7 @@ const supportLinks = computed(() => [
 .workspace-sidebar {
   position: sticky;
   top: 0;
-  width: 240px;
+  width: 300px;
   height: 100vh;
   background: #fff;
   border-right: 1px solid #e5e7eb;

@@ -16,6 +16,7 @@ const messages: LocaleMessages = {
     TurnstileCheckFailedMsg: "人机验证检查失败",
     NewAddressDisabledMsg: "新建邮箱地址已禁用, 请联系管理员",
     NewAddressAnonymousDisabledMsg: "匿名用户新建邮箱地址已禁用, 请联系管理员",
+    UserLoginRequiredMsg: "请先登录用户账号",
     FailedCreateAddressMsg: "创建邮箱地址失败",
     InvalidAddressMsg: "无效的邮箱地址",
     InvalidAddressCredentialMsg: "无效的邮箱地址凭据",

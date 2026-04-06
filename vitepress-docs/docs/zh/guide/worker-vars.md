@@ -98,6 +98,7 @@
 | `USER_DEFAULT_ROLE`                   | 文本      | 新用户默认角色, 仅在启用邮件验证时有效                                   | `vip`   |
 | `ADMIN_USER_ROLE`                     | 文本      | admin 角色配置, 如果用户角色等于 ADMIN_USER_ROLE 则可以访问 admin 控制台 | `admin` |
 | `USER_ROLES`                          | JSON      | -                                                                        | 见下方  |
+| `REQUIRE_USER_LOGIN`                  | 文本/JSON | 强制先登录用户账号后才能进入系统；开启后首页会显示统一用户登录页，邮箱地址只能在登录后创建或绑定 | `true`  |
 | `DISABLE_ANONYMOUS_USER_CREATE_EMAIL` | 文本/JSON | 禁用匿名用户创建邮箱，如果设置为 true，则用户只能在登录后创建邮箱地址    | `true`  |
 | `NO_LIMIT_SEND_ROLE`                  | 文本      | 可以无限发送邮件的角色, 多个角色使用逗号分割 `vip,admin`                 | `vip`   |
 

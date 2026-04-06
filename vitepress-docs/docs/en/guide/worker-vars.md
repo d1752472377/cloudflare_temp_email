@@ -102,6 +102,7 @@
 | `USER_DEFAULT_ROLE`                   | Text      | Default role for new users, only effective when email verification is enabled                        | `vip`     |
 | `ADMIN_USER_ROLE`                     | Text      | Admin role configuration, if user role equals ADMIN_USER_ROLE, user can access admin console         | `admin`   |
 | `USER_ROLES`                          | JSON      | -                                                                                                    | See below |
+| `REQUIRE_USER_LOGIN`                  | Text/JSON | Force user-account login before entering the app; when enabled, the homepage becomes a unified user login and mailbox addresses can only be created or bound after sign-in | `true`    |
 | `DISABLE_ANONYMOUS_USER_CREATE_EMAIL` | Text/JSON | Disable anonymous user mailbox creation, if set to true, users can only create addresses after login | `true`    |
 | `NO_LIMIT_SEND_ROLE`                  | Text      | Roles that can send unlimited emails, multiple roles separated by comma `vip,admin`                  | `vip`     |
 

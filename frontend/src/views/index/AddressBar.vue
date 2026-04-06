@@ -141,9 +141,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div>
-    <div v-if="settings.address" class="workspace-header">
-      <div class="workspace-header-left">
+  <div class="workspace-header">
+    <div class="workspace-header-left">
+      <template v-if="settings.address">
         <div class="workspace-title-group">
           <div class="workspace-title">{{ headerTitle }}</div>
         </div>
@@ -153,98 +153,77 @@ onMounted(async () => {
           <span class="address-pill-value">{{ settings.address }}</span>
           <n-icon class="address-pill-icon" :component="Copy" />
         </button>
-      </div>
-
-      <div class="workspace-header-tools">
-        <n-tooltip trigger="hover">
-          <template #trigger>
-            <button class="tool-button" @click="openStatus">
-              <n-icon :component="GlobeOutline" />
-            </button>
-          </template>
-          {{ t('status') }}
-        </n-tooltip>
-
-        <n-tooltip trigger="hover">
-          <template #trigger>
-            <button class="tool-button" @click="toggleDark()">
-              <n-icon :component="isDark ? SunnyOutline : MoonOutline" />
-            </button>
-          </template>
-          {{ t('appearance') }}
-        </n-tooltip>
-
-        <n-tooltip trigger="hover">
-          <template #trigger>
-            <button class="tool-button" @click="changeLocale">
-              <n-icon :component="LanguageOutline" />
-            </button>
-          </template>
-          {{ languageLabel }}
-        </n-tooltip>
-
-        <n-popover trigger="click" placement="bottom-end">
-          <template #trigger>
-            <button class="tool-button">
-              <n-icon :component="SettingsOutline" />
-            </button>
-          </template>
-          <div class="header-popover-actions">
-            <n-button tertiary block @click="showAddressCredential = true">
-              <template #icon>
-                <n-icon :component="KeyOutline" />
-              </template>
-              {{ t('addressCredential') }}
-            </n-button>
-            <n-button tertiary block @click="showAddressManage = true">
-              <template #icon>
-                <n-icon :component="ExchangeAlt" />
-              </template>
-              {{ t('addressManage') }}
-            </n-button>
-            <n-button v-if="userJwt" tertiary block @click="onUserLogin">
-              <template #icon>
-                <n-icon :component="GridOutline" />
-              </template>
-              {{ t('accountEntry') }}
-            </n-button>
-            <n-button v-if="showSimpleToggle" tertiary block @click="openAppearance">
-              {{ t('simpleMode') }}
-            </n-button>
-          </div>
-        </n-popover>
-
-        <button class="avatar-chip" @click="showAddressManage = true">
-          {{ avatarLetter }}
-        </button>
+      </template>
+      <div v-else class="workspace-title-group">
+        <div class="workspace-title">{{ t('workspace') }}</div>
       </div>
     </div>
 
-    <div v-else-if="isTelegram">
-      <TelegramAddress />
-    </div>
-    <div v-else-if="userJwt" class="center account-center">
-      <n-card :bordered="false" embedded class="manage-card">
-        <AddressManagement />
-      </n-card>
-    </div>
-    <div v-else class="center login-center">
-      <div class="login-shell">
-        <n-alert v-if="jwt" type="warning" :show-icon="false" :bordered="false" closable>
-          <span>{{ t('fetchAddressError') }}</span>
-        </n-alert>
-        <Login />
-        <div class="user-login-link-row">
-          <n-button quaternary @click="onUserLogin">
+    <div class="workspace-header-tools">
+      <n-tooltip trigger="hover">
+        <template #trigger>
+          <button class="tool-button" @click="openStatus">
+            <n-icon :component="GlobeOutline" />
+          </button>
+        </template>
+        {{ t('status') }}
+      </n-tooltip>
+
+      <n-tooltip trigger="hover">
+        <template #trigger>
+          <button class="tool-button" @click="toggleDark()">
+            <n-icon :component="isDark ? SunnyOutline : MoonOutline" />
+          </button>
+        </template>
+        {{ t('appearance') }}
+      </n-tooltip>
+
+      <n-tooltip trigger="hover">
+        <template #trigger>
+          <button class="tool-button" @click="changeLocale">
+            <n-icon :component="LanguageOutline" />
+          </button>
+        </template>
+        {{ languageLabel }}
+      </n-tooltip>
+
+      <n-popover trigger="click" placement="bottom-end">
+        <template #trigger>
+          <button class="tool-button">
+            <n-icon :component="SettingsOutline" />
+          </button>
+        </template>
+        <div class="header-popover-actions">
+          <n-button v-if="settings.address" tertiary block @click="showAddressCredential = true">
             <template #icon>
-              <n-icon :component="User" />
+              <n-icon :component="KeyOutline" />
             </template>
-            {{ t('userLogin') }}
+            {{ t('addressCredential') }}
+          </n-button>
+          <n-button tertiary block @click="showAddressManage = true">
+            <template #icon>
+              <n-icon :component="ExchangeAlt" />
+            </template>
+            {{ t('addressManage') }}
+          </n-button>
+          <n-button v-if="userJwt" tertiary block @click="onUserLogin">
+            <template #icon>
+              <n-icon :component="GridOutline" />
+            </template>
+            {{ t('accountEntry') }}
+          </n-button>
+          <n-button v-if="showSimpleToggle" tertiary block @click="openAppearance">
+            {{ t('simpleMode') }}
           </n-button>
         </div>
-      </div>
+      </n-popover>
+
+      <button class="avatar-chip" @click="onUserLogin">
+        <n-icon :component="User" />
+      </button>
     </div>
 
+    <!-- Modals -->
     <n-modal v-model:show="showAddressCredential" preset="dialog" :title="t('addressCredential')">
       <span>
         <p>{{ t('addressCredentialTip') }}</p>
@@ -277,14 +256,13 @@ onMounted(async () => {
 
 <style scoped>
 .workspace-header {
-  height: 52px;
-  background: #fff;
-  border-bottom: 1px solid #e5e7eb;
+  height: 64px;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  padding: 0 18px;
+  padding: 0 24px;
 }
 
 .workspace-header-left {
@@ -300,7 +278,7 @@ onMounted(async () => {
 }
 
 .workspace-title {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   color: #111827;
 }
@@ -330,7 +308,7 @@ onMounted(async () => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
 }
 
@@ -364,7 +342,7 @@ onMounted(async () => {
 }
 
 .tool-button:hover {
-  background: #f3f4f6;
+  background: rgba(0, 0, 0, 0.05);
   color: #111827;
 }
 
@@ -375,9 +353,15 @@ onMounted(async () => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #315efb;
-  color: #fff;
-  font-weight: 700;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 18px;
+  transition: all 0.2s;
+}
+
+.avatar-chip:hover {
+  background: #e2e8f0;
+  color: #1e293b;
 }
 
 .header-popover-actions {

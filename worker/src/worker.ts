@@ -146,8 +146,16 @@ const checkoutUserRolePayload = async (
 
 // api auth
 app.use('/api/*', async (c, next) => {
+	const lang = c.get("lang") || c.env.DEFAULT_LANG;
+	const msgs = i18n.getMessages(lang);
+	const requireUserLogin = getBooleanValue(c.env.REQUIRE_USER_LOGIN);
+
 	if (c.req.path.startsWith("/api/new_address")) {
 		await checkUserPayload(c);
+		await checkoutUserRolePayload(c);
+		if (requireUserLogin && !c.get("userPayload")) {
+			return c.text(msgs.UserLoginRequiredMsg, 401)
+		}
 		await next();
 		return;
 	}
@@ -157,16 +165,26 @@ app.use('/api/*', async (c, next) => {
 		await checkoutUserRolePayload(c);
 	}
 	if (c.req.path.startsWith("/api/address_login")) {
+		if (requireUserLogin) {
+			await checkUserPayload(c);
+			if (!c.get("userPayload")) {
+				return c.text(msgs.UserLoginRequiredMsg, 401)
+			}
+		}
 		await next();
 		return;
+	}
+	if (requireUserLogin) {
+		await checkUserPayload(c);
+		if (!c.get("userPayload")) {
+			return c.text(msgs.UserLoginRequiredMsg, 401)
+		}
 	}
 
 	try {
 		return await jwt({ secret: c.env.JWT_SECRET, alg: "HS256" })(c, next);
 	} catch (e) {
 		console.warn(e);
-		const lang = c.get("lang") || c.env.DEFAULT_LANG;
-		const msgs = i18n.getMessages(lang);
 		return c.text(msgs.InvalidAddressCredentialMsg, 401)
 	}
 });

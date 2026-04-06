@@ -36,7 +36,7 @@ import Attachment from './index/Attachment.vue'
 import About from './common/About.vue'
 import SimpleIndex from './index/SimpleIndex.vue'
 
-const { loading, settings, openSettings, indexTab, useSimpleIndex } = useGlobalState()
+const { loading, settings, openSettings, indexTab, useSimpleIndex, userSettings } = useGlobalState()
 const message = useMessage()
 const route = useRoute()
 const isMobile = useIsMobile()
@@ -167,7 +167,7 @@ onMounted(() => {
 
 const navItems = computed(() => {
   const items = [
-    { key: 'mailbox', label: t('mailbox'), icon: MailOutline, show: !!settings.value.address },
+    { key: 'mailbox', label: t('mailbox'), icon: MailOutline, show: true },
     { key: 'sendbox', label: t('sendbox'), icon: SendOutline, show: !!settings.value.address && openSettings.value.enableSendMail },
     { key: 'sendmail', label: t('sendmail'), icon: CreateOutline, show: !!settings.value.address && openSettings.value.enableSendMail },
     { key: 'accountSettings', label: t('accountSettings'), icon: PersonCircleOutline, show: !!settings.value.address },
@@ -175,7 +175,7 @@ const navItems = computed(() => {
     { key: 'auto_reply', label: t('auto_reply'), icon: RefreshOutline, show: !!settings.value.address && openSettings.value.enableAutoReply },
     { key: 'webhook', label: t('webhookSettings'), icon: LinkOutline, show: !!settings.value.address && openSettings.value.enableWebhook },
     { key: 's3_attachment', label: t('s3Attachment'), icon: CloudUploadOutline, show: !!settings.value.address && openSettings.value.isS3Enabled },
-    { key: 'about', label: t('about'), icon: InformationCircleOutline, show: !!settings.value.address && openSettings.value.enableIndexAbout },
+    { key: 'about', label: t('about'), icon: InformationCircleOutline, show: openSettings.value.enableIndexAbout },
   ]
   return items.filter((item) => item.show)
 })
@@ -184,6 +184,7 @@ const primaryNavItems = computed(() => navItems.value.filter((item) => ['mailbox
 const utilityNavItems = computed(() => navItems.value.filter((item) => !['mailbox', 'sendbox', 'sendmail', 'accountSettings'].includes(item.key)))
 const activeNavLabel = computed(() => navItems.value.find((item) => item.key === indexTab.value)?.label || t('mailbox'))
 
+const showWorkspace = computed(() => !openSettings.value.requireUserLogin || !!userSettings.value.user_email)
 const supportLinks = computed(() => [
   {
     key: 'update',
@@ -236,17 +237,12 @@ const supportLinks = computed(() => [
       <SimpleIndex />
     </div>
 
-    <div v-else class="workspace-shell" :class="{ authenticated: settings.address }">
+    <div v-else-if="showWorkspace" class="workspace-shell" :class="{ authenticated: settings.address }">
       <aside v-if="!isMobile" class="workspace-sidebar">
         <div class="sidebar-top">
           <div class="sidebar-brand">
-            <div class="brand-mark">
-              <n-icon :component="SparklesOutline" />
-            </div>
-            <div>
-              <div class="brand-title">{{ openSettings.title || t('appName') }}</div>
-              <div class="brand-subtitle">{{ t('navTitle') }}</div>
-            </div>
+            <img src="/logo.png" alt="Logo" class="sidebar-logo-img" />
+            <div class="brand-title">dovislab.com</div>
           </div>
         </div>
 
@@ -261,6 +257,10 @@ const supportLinks = computed(() => [
             >
               <n-icon :component="item.icon" />
               <span>{{ item.label }}</span>
+            </button>
+            <button class="sidebar-link primary-link" @click="queryMail">
+              <n-icon :component="RefreshOutline" />
+              <span>{{ t('mailbox') == 'Inbox' ? 'Refresh' : '刷新' }}</span>
             </button>
           </div>
 
@@ -315,60 +315,65 @@ const supportLinks = computed(() => [
           </button>
         </div>
 
-        <section v-if="settings.address" class="workspace-content">
-          <div v-if="indexTab === 'mailbox'" class="workspace-page mailbox-page">
-            <div v-if="showMailIdQuery" class="mail-query-row">
-              <n-input-group>
-                <n-input v-model:value="mailIdQuery" />
-                <n-button @click="queryMail" type="primary">
-                  {{ t('query') }}
-                </n-button>
-              </n-input-group>
+        <section class="workspace-content">
+          <div v-if="!settings.address" class="workspace-page boxed-page empty-workspace-state">
+            <n-empty :description="route.query.mail_id ? '' : (t('mailbox') === 'Inbox' ? 'Select or bind a mailbox address in Account.' : '请先在账户中绑定或创建邮箱地址。')" />
+          </div>
+          <template v-else>
+            <div v-if="indexTab === 'mailbox'" class="workspace-page mailbox-page">
+              <div v-if="showMailIdQuery" class="mail-query-row">
+                <n-input-group>
+                  <n-input v-model:value="mailIdQuery" />
+                  <n-button @click="queryMail" type="primary">
+                    {{ t('query') }}
+                  </n-button>
+                </n-input-group>
+              </div>
+              <MailBox
+                :key="mailBoxKey"
+                :showEMailTo="false"
+                :showReply="openSettings.enableSendMail"
+                :showSaveS3="openSettings.isS3Enabled"
+                :saveToS3="saveToS3"
+                :enableUserDeleteEmail="openSettings.enableUserDeleteEmail"
+                :fetchMailData="fetchMailData"
+                :deleteMail="deleteMail"
+                :showFilterInput="true"
+              />
             </div>
-            <MailBox
-              :key="mailBoxKey"
-              :showEMailTo="false"
-              :showReply="openSettings.enableSendMail"
-              :showSaveS3="openSettings.isS3Enabled"
-              :saveToS3="saveToS3"
-              :enableUserDeleteEmail="openSettings.enableUserDeleteEmail"
-              :fetchMailData="fetchMailData"
-              :deleteMail="deleteMail"
-              :showFilterInput="true"
-            />
-          </div>
 
-          <div v-else-if="indexTab === 'sendbox'" class="workspace-page boxed-page">
-            <SendBox :fetchMailData="fetchSenboxData" :enableUserDeleteEmail="openSettings.enableUserDeleteEmail" :deleteMail="deleteSenboxMail" />
-          </div>
+            <div v-else-if="indexTab === 'sendbox'" class="workspace-page boxed-page">
+              <SendBox :fetchMailData="fetchSenboxData" :enableUserDeleteEmail="openSettings.enableUserDeleteEmail" :deleteMail="deleteSenboxMail" />
+            </div>
 
-          <div v-else-if="indexTab === 'sendmail'" class="workspace-page boxed-page">
-            <SendMail />
-          </div>
+            <div v-else-if="indexTab === 'sendmail'" class="workspace-page boxed-page">
+              <SendMail />
+            </div>
 
-          <div v-else-if="indexTab === 'accountSettings'" class="workspace-page boxed-page">
-            <AccountSettings />
-          </div>
+            <div v-else-if="indexTab === 'accountSettings'" class="workspace-page boxed-page">
+              <AccountSettings />
+            </div>
 
-          <div v-else-if="indexTab === 'appearance'" class="workspace-page boxed-page">
-            <Appearance :showUseSimpleIndex="true" />
-          </div>
+            <div v-else-if="indexTab === 'appearance'" class="workspace-page boxed-page">
+              <Appearance :showUseSimpleIndex="true" />
+            </div>
 
-          <div v-else-if="indexTab === 'auto_reply'" class="workspace-page boxed-page">
-            <AutoReply />
-          </div>
+            <div v-else-if="indexTab === 'auto_reply'" class="workspace-page boxed-page">
+              <AutoReply />
+            </div>
 
-          <div v-else-if="indexTab === 'webhook'" class="workspace-page boxed-page">
-            <Webhook />
-          </div>
+            <div v-else-if="indexTab === 'webhook'" class="workspace-page boxed-page">
+              <Webhook />
+            </div>
 
-          <div v-else-if="indexTab === 's3_attachment'" class="workspace-page boxed-page">
-            <Attachment />
-          </div>
+            <div v-else-if="indexTab === 's3_attachment'" class="workspace-page boxed-page">
+              <Attachment />
+            </div>
 
-          <div v-else-if="indexTab === 'about'" class="workspace-page boxed-page">
-            <About />
-          </div>
+            <div v-else-if="indexTab === 'about'" class="workspace-page boxed-page">
+              <About />
+            </div>
+          </template>
         </section>
       </main>
     </div>
@@ -379,13 +384,13 @@ const supportLinks = computed(() => [
 .workspace-shell {
   display: flex;
   min-height: 100vh;
-  background: #f0f2f5;
+  background: #f8fafc;
 }
 
 .workspace-sidebar {
   position: sticky;
   top: 0;
-  width: 200px;
+  width: 240px;
   height: 100vh;
   background: #fff;
   border-right: 1px solid #e5e7eb;
@@ -402,30 +407,24 @@ const supportLinks = computed(() => [
 .sidebar-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
-.brand-mark {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #4f6ef7, #7d8df8);
-  color: #fff;
-  font-size: 18px;
+.sidebar-logo-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
 .brand-title {
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 700;
-  color: #111827;
+  color: #1e293b;
 }
 
 .brand-subtitle {
   margin-top: 2px;
-  font-size: 12px;
+  font-size: 14px;
   color: #94a3b8;
 }
 
@@ -477,17 +476,17 @@ const supportLinks = computed(() => [
 
 .sidebar-link.active,
 .mobile-nav-item.active {
-  background: #e8f0ff;
-  color: #315efb;
+  background: #ede9fe;
+  color: #6366f1;
   font-weight: 600;
 }
 
 .primary-link {
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .subtle-link {
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .sidebar-bottom {
@@ -497,7 +496,7 @@ const supportLinks = computed(() => [
 
 .sidebar-meta-title {
   margin-bottom: 8px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -505,15 +504,15 @@ const supportLinks = computed(() => [
 }
 
 .sidebar-meta-link {
-  padding: 7px 4px;
+  padding: 8px 4px;
   border-radius: 8px;
   color: #6b7280;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .sidebar-copyright {
-  margin-top: 12px;
-  font-size: 11px;
+  margin-top: 14px;
+  font-size: 12px;
   color: #9ca3af;
   line-height: 1.5;
 }
@@ -567,6 +566,12 @@ const supportLinks = computed(() => [
 
 .mail-query-row {
   margin-bottom: 14px;
+}
+
+.empty-workspace-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @media (max-width: 768px) {

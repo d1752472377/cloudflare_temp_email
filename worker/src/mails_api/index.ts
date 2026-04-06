@@ -109,6 +109,10 @@ api.post('/api/new_address', async (c) => {
     const msgs = i18n.getMessagesbyContext(c);
     const userPayload = c.get("userPayload");
 
+    if (getBooleanValue(c.env.REQUIRE_USER_LOGIN) && !userPayload) {
+        return c.text(msgs.UserLoginRequiredMsg, 401)
+    }
+
     if (getBooleanValue(c.env.DISABLE_ANONYMOUS_USER_CREATE_EMAIL)
         && !userPayload
     ) {

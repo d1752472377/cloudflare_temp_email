@@ -64,7 +64,7 @@ const getOpenSettings = async (message, notification) => {
         const res = await api.fetch("/open_api/settings");
         const domainLabels = res["domainLabels"] || [];
         if (res["domains"]?.length < 1) {
-            message.error("No domains found, please check your worker settings");
+            message?.error?.("No domains found, please check your worker settings");
         }
         Object.assign(openSettings.value, {
             ...res,
@@ -84,6 +84,7 @@ const getOpenSettings = async (message, notification) => {
             adminContact: res["adminContact"] || "",
             enableUserCreateEmail: res["enableUserCreateEmail"] || false,
             disableAnonymousUserCreateEmail: res["disableAnonymousUserCreateEmail"] || false,
+            requireUserLogin: res["requireUserLogin"] || false,
             disableCustomAddressName: res["disableCustomAddressName"] || false,
             enableUserDeleteEmail: res["enableUserDeleteEmail"] || false,
             enableAutoReply: res["enableAutoReply"] || false,
@@ -106,7 +107,7 @@ const getOpenSettings = async (message, notification) => {
                 || openSettings.value.alwaysShowAnnouncement)
         ) {
             announcement.value = openSettings.value.announcement;
-            notification.info({
+            notification?.info?.({
                 content: () => {
                     return h("div", {
                         innerHTML: announcement.value
@@ -115,7 +116,7 @@ const getOpenSettings = async (message, notification) => {
             });
         }
     } catch (error) {
-        message.error(error.message || "error");
+        message?.error?.(error.message || "error");
     } finally {
         openSettings.value.fetched = true;
     }
@@ -143,7 +144,7 @@ const getUserOpenSettings = async (message) => {
         const res = await api.fetch(`/user_api/open_settings`);
         Object.assign(userOpenSettings.value, res);
     } catch (error) {
-        message.error(error.message || "fetch settings failed");
+        message?.error?.(error.message || "fetch settings failed");
     } finally {
         userOpenSettings.value.fetched = true;
     }

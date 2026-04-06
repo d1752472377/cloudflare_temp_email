@@ -70,6 +70,8 @@ JWT_SECRET = "xxx"
 BLACK_LIST = ""
 # Allow users to create email addresses
 ENABLE_USER_CREATE_EMAIL = true
+# Require a user account before entering the mailbox UI or binding/logging into mailbox addresses
+# REQUIRE_USER_LOGIN = true
 # Disable anonymous user create email, if set true, users can only create email addresses after logging in
 # DISABLE_ANONYMOUS_USER_CREATE_EMAIL = true
 # Allow users to delete messages

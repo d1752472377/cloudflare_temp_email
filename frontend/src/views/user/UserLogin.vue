@@ -13,7 +13,8 @@ import Turnstile from '../../components/Turnstile.vue';
 
 const {
     userJwt, userOpenSettings, openSettings,
-    userOauth2SessionState, userOauth2SessionClientID
+    userOauth2SessionState, userOauth2SessionClientID,
+    jwt, addressPassword,
 } = useGlobalState()
 const message = useMessage();
 
@@ -92,6 +93,8 @@ const emailLogin = async () => {
             })
         });
         userJwt.value = res.jwt;
+        jwt.value = '';
+        addressPassword.value = '';
         location.reload();
     } catch (error) {
         message.error(error.message || "login failed");
@@ -197,6 +200,8 @@ const passkeyLogin = async () => {
             })
         })
         userJwt.value = res.jwt;
+        jwt.value = '';
+        addressPassword.value = '';
         location.reload();
     } catch (e) {
         console.error(e)

@@ -7,7 +7,7 @@ import { useGlobalState } from '../../store'
 import { api } from '../../api';
 
 const {
-    userJwt, userOauth2SessionState, userOauth2SessionClientID
+    userJwt, userOauth2SessionState, userOauth2SessionClientID, jwt, addressPassword
 } = useGlobalState()
 
 const message = useMessage();
@@ -51,6 +51,8 @@ onMounted(async () => {
             })
         });
         userJwt.value = res.jwt;
+        jwt.value = '';
+        addressPassword.value = '';
         router.push('/user');
     } catch (error) {
         console.error(error);

@@ -42,6 +42,9 @@ export default {
         const msgs = i18n.getMessagesbyContext(c);
 
         // 检查功能是否启用
+        if (getBooleanValue(c.env.REQUIRE_USER_LOGIN) && !c.get("userPayload")) {
+            return c.text(msgs.UserLoginRequiredMsg, 401);
+        }
         if (!getBooleanValue(c.env.ENABLE_ADDRESS_PASSWORD)) {
             return c.text(msgs.PasswordLoginDisabledMsg, 403);
         }

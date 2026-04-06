@@ -10,6 +10,8 @@
 
 ### Features
 
+- feat: |Login| Add `REQUIRE_USER_LOGIN` mode so unauthenticated visitors can no longer enter the app, create mailboxes, or use direct mailbox-password login; the homepage now becomes a unified user-login entry and mailbox addresses are created/bound only after sign-in
+
 ### Bug Fixes
 
 - fix: |Login| Switch mailbox login to the default “email + password” flow while keeping JWT as the underlying session token, instead of treating pasted credential/JWT as the primary frontend login path

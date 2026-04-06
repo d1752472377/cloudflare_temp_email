@@ -14,6 +14,7 @@ export type LocaleMessages = {
     TurnstileCheckFailedMsg: string
     NewAddressDisabledMsg: string
     NewAddressAnonymousDisabledMsg: string
+    UserLoginRequiredMsg: string
     FailedCreateAddressMsg: string
     InvalidAddressMsg: string
     InvalidAddressCredentialMsg: string

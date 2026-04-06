@@ -16,6 +16,7 @@ const messages: LocaleMessages = {
     TurnstileCheckFailedMsg: "Human verification check failed",
     NewAddressDisabledMsg: "New address is disabled, please contact the administrator",
     NewAddressAnonymousDisabledMsg: "New address for anonymous user is disabled, please contact the administrator",
+    UserLoginRequiredMsg: "Please login with your user account first",
     FailedCreateAddressMsg: "Failed to create address",
     InvalidAddressMsg: "Invalid address",
     InvalidAddressCredentialMsg: "Invalid address credential",

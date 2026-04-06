@@ -1,7 +1,6 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
 import { NewLabelOutlined, EmailOutlined } from '@vicons/material'
 
 import AdminContact from '../common/AdminContact.vue'
@@ -9,344 +8,375 @@ import Turnstile from '../../components/Turnstile.vue'
 
 import { useGlobalState } from '../../store'
 import { api } from '../../api'
-import { getRouterPathWithLang, hashPassword } from '../../utils'
+import { hashPassword } from '../../utils'
 
 const props = defineProps({
-    bindUserAddress: {
-        type: Function,
-        default: async () => { await api.bindUserAddress(); },
-        required: true
+  bindUserAddress: {
+    type: Function,
+    default: async () => { await api.bindUserAddress() },
+    required: true,
+  },
+  newAddressPath: {
+    type: Function,
+    default: async (address_name, domain, cf_token, enableRandomSubdomain) => {
+      return await api.fetch('/api/new_address', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: address_name,
+          domain,
+          cf_token,
+          enableRandomSubdomain,
+        }),
+      })
     },
-    newAddressPath: {
-        type: Function,
-        default: async (address_name, domain, cf_token, enableRandomSubdomain) => {
-            return await api.fetch("/api/new_address", {
-                method: "POST",
-                body: JSON.stringify({
-                    name: address_name,
-                    domain: domain,
-                    cf_token: cf_token,
-                    enableRandomSubdomain: enableRandomSubdomain,
-                }),
-            });
-        },
-        required: true
-    },
+    required: true,
+  },
 })
 
 const message = useMessage()
 const notification = useNotification()
-const router = useRouter()
 
 const {
-    jwt, loading, openSettings,
-    showAddressCredential, userSettings, addressPassword
+  jwt, loading, openSettings,
+  showAddressCredential, userSettings, addressPassword,
 } = useGlobalState()
 
-const tabValue = ref('signin')
-const emailName = ref("")
-const emailDomain = ref("")
-const cfToken = ref("")
+const emailName = ref('')
+const emailDomain = ref('')
+const cfToken = ref('')
 const enableRandomSubdomain = ref(false)
-const loginCfToken = ref("")
+const loginCfToken = ref('')
 const loginTurnstileRef = ref(null)
 const loginAddress = ref('')
 const loginPassword = ref('')
 
 const login = async () => {
-    if (!loginAddress.value || !loginPassword.value) {
-        message.error(t('emailPasswordRequired'));
-        return;
-    }
+  if (!loginAddress.value || !loginPassword.value) {
+    message.error(t('emailPasswordRequired'))
+    return
+  }
+  try {
+    const res = await api.fetch('/api/address_login', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: loginAddress.value,
+        password: await hashPassword(loginPassword.value),
+        cf_token: loginCfToken.value,
+      }),
+    })
+    jwt.value = res.jwt
+    await api.getSettings()
     try {
-        const res = await api.fetch('/api/address_login', {
-            method: 'POST',
-            body: JSON.stringify({
-                email: loginAddress.value,
-                password: await hashPassword(loginPassword.value),
-                cf_token: loginCfToken.value
-            })
-        });
-        jwt.value = res.jwt;
-        await api.getSettings();
-        try {
-            await props.bindUserAddress();
-        } catch (error) {
-            message.error(`${t('bindUserAddressError')}: ${error.message}`);
-        }
-        await router.push(getRouterPathWithLang("/", locale.value));
+      await props.bindUserAddress()
     } catch (error) {
-        message.error(error.message || "error");
-        loginTurnstileRef.value?.refresh?.();
+      message.error(`${t('bindUserAddressError')}: ${error.message}`)
     }
+  } catch (error) {
+    message.error(error.message || 'error')
+    loginTurnstileRef.value?.refresh?.()
+  }
 }
 
-const { locale, t } = useI18n({
-    messages: {
-        en: {
-            login: 'Login',
-            loginAndBind: 'Login and Bind',
-            pleaseGetNewEmail: 'Please login or click "Get New Email" button to get a new email address',
-            getNewEmail: 'Create New Email',
-            getNewEmailTip1: 'Please input the email you want to use. only allow: ',
-            getNewEmailTip2: 'Levaing it blank will generate a random email address.',
-            getNewEmailTip3: 'You can choose a domain from the dropdown list.',
-            credential: 'Initial Mailbox Credential',
-            ok: 'OK',
-            generateName: 'Generate Fake Name',
-            help: 'Help',
-            bindUserInfo: 'Logged in user, login without binding email or create new email address will bind to current user',
-            bindUserAddressError: 'Error when bind email address to user',
-            autoGeneratedName: 'Auto-generated name',
-            email: 'Email',
-            password: 'Password',
-            emailPasswordRequired: 'Email and password are required',
-            enableRandomSubdomain: 'Use Random Subdomain',
-            randomSubdomainTip: 'When enabled, the created address will use a random subdomain. Subdomain addresses are recommended for receiving only.',
-        },
-        zh: {
-            login: '登录',
-            loginAndBind: '登录并绑定',
-            pleaseGetNewEmail: '请"登录"或点击 "注册新邮箱" 按钮来获取一个新的邮箱地址',
-            getNewEmail: '创建新邮箱',
-            getNewEmailTip1: '请输入你想要使用的邮箱地址, 只允许: ',
-            getNewEmailTip2: '留空将会生成一个随机的邮箱地址。',
-            getNewEmailTip3: '你可以从下拉列表中选择一个域名。',
-            credential: '初始邮箱凭据',
-            ok: '确定',
-            generateName: '生成随机名字',
-            help: '帮助',
-            bindUserInfo: '已登录用户, 登录未绑定邮箱或创建新邮箱地址将绑定到当前用户',
-            bindUserAddressError: '绑定邮箱地址到用户时错误',
-            autoGeneratedName: '自动生成名称',
-            email: '邮箱',
-            password: '密码',
-            emailPasswordRequired: '邮箱和密码不能为空',
-            enableRandomSubdomain: '启用随机子域名',
-            randomSubdomainTip: '启用后，创建出来的地址会自动挂在随机子域名下。子域名地址更建议仅用于收件。',
-        }
-    }
-});
-
-const loginAndBindTag = computed(() => {
-    if (userSettings.value.user_email) {
-        return t('loginAndBind')
-    }
-    return t('login')
+const { t } = useI18n({
+  messages: {
+    en: {
+      login: 'Login',
+      loginAndBind: 'Login and Bind',
+      getNewEmail: 'Create New Email',
+      getNewEmailTip1: 'Please input the email you want to use. only allow: ',
+      getNewEmailTip2: 'Leaving it blank will generate a random email address.',
+      getNewEmailTip3: 'You can choose a domain from the dropdown list.',
+      generateName: 'Generate Fake Name',
+      bindUserInfo: 'Logged in user, login without binding email or create new email address will bind to current user',
+      bindUserAddressError: 'Error when bind email address to user',
+      autoGeneratedName: 'Auto-generated name',
+      email: 'Email',
+      password: 'Password',
+      emailPasswordRequired: 'Email and password are required',
+      enableRandomSubdomain: 'Use Random Subdomain',
+      randomSubdomainTip: 'When enabled, the created address will use a random subdomain. Subdomain addresses are recommended for receiving only.',
+      loginTitle: 'Mailbox Login',
+      loginDesc: 'Sign in with your mailbox address and password.',
+      registerTitle: 'Create Mailbox',
+      registerDesc: 'Create a new temporary mailbox and get credentials instantly.',
+      helpText: 'Need custom rules or support? Check the help section below.',
+      userLogin: 'User Login',
+    },
+    zh: {
+      login: '登录',
+      loginAndBind: '登录并绑定',
+      getNewEmail: '创建新邮箱',
+      getNewEmailTip1: '请输入你想要使用的邮箱地址, 只允许: ',
+      getNewEmailTip2: '留空将会生成一个随机的邮箱地址。',
+      getNewEmailTip3: '你可以从下拉列表中选择一个域名。',
+      generateName: '生成随机名字',
+      bindUserInfo: '已登录用户, 登录未绑定邮箱或创建新邮箱地址将绑定到当前用户',
+      bindUserAddressError: '绑定邮箱地址到用户时错误',
+      autoGeneratedName: '自动生成名称',
+      email: '邮箱',
+      password: '密码',
+      emailPasswordRequired: '邮箱和密码不能为空',
+      enableRandomSubdomain: '启用随机子域名',
+      randomSubdomainTip: '启用后，创建出来的地址会自动挂在随机子域名下。子域名地址更建议仅用于收件。',
+      loginTitle: '邮箱登录',
+      loginDesc: '使用邮箱地址和密码进入你的临时邮箱。',
+      registerTitle: '创建邮箱',
+      registerDesc: '创建一个新的临时邮箱，并立即获得凭据。',
+      helpText: '如果你需要自定义规则或帮助，可以查看下方说明。',
+      userLogin: '用户登录',
+    },
+  },
 })
 
-const addressRegex = computed(() => {
-    try {
-        if (openSettings.value.addressRegex) {
-            return new RegExp(openSettings.value.addressRegex, 'g');
-        }
-    } catch (error) {
-        console.error(error);
-        message.error(`Invalid addressRegex: ${openSettings.value.addressRegex}`);
-    }
-    return /[^a-z0-9]/g;
-});
+const loginAndBindTag = computed(() => (userSettings.value.user_email ? t('loginAndBind') : t('login')))
 
-const generateNameLoading = ref(false);
-const generateName = async () => {
-    try {
-        generateNameLoading.value = true;
-        const { faker } = await import('https://esm.sh/@faker-js/faker');
-        emailName.value = faker.internet.email()
-            .split('@')[0]
-            .replace(/\s+/g, '.')
-            .replace(/\.{2,}/g, '.')
-            .replace(addressRegex.value, '')
-            .toLowerCase();
-        // support maxAddressLen
-        if (emailName.value.length > openSettings.value.maxAddressLen) {
-            emailName.value = emailName.value.slice(0, openSettings.value.maxAddressLen);
-        }
-    } catch (error) {
-        message.error(error.message || "error");
-    } finally {
-        generateNameLoading.value = false;
+const addressRegex = computed(() => {
+  try {
+    if (openSettings.value.addressRegex) {
+      return new RegExp(openSettings.value.addressRegex, 'g')
     }
-};
+  } catch (error) {
+    console.error(error)
+    message.error(`Invalid addressRegex: ${openSettings.value.addressRegex}`)
+  }
+  return /[^a-z0-9]/g
+})
+
+const generateNameLoading = ref(false)
+const generateName = async () => {
+  try {
+    generateNameLoading.value = true
+    const { faker } = await import('https://esm.sh/@faker-js/faker')
+    emailName.value = faker.internet.email()
+      .split('@')[0]
+      .replace(/\s+/g, '.')
+      .replace(/\.{2,}/g, '.')
+      .replace(addressRegex.value, '')
+      .toLowerCase()
+    if (emailName.value.length > openSettings.value.maxAddressLen) {
+      emailName.value = emailName.value.slice(0, openSettings.value.maxAddressLen)
+    }
+  } catch (error) {
+    message.error(error.message || 'error')
+  } finally {
+    generateNameLoading.value = false
+  }
+}
 
 const newEmail = async () => {
+  try {
+    const nameToSend = openSettings.value.disableCustomAddressName ? '' : emailName.value
+    const res = await props.newAddressPath(nameToSend, emailDomain.value, cfToken.value, enableRandomSubdomain.value)
+    jwt.value = res.jwt
+    addressPassword.value = res.password || ''
+    await api.getSettings()
+    showAddressCredential.value = true
     try {
-        // If custom names are disabled, send empty name to trigger backend auto-generation
-        const nameToSend = openSettings.value.disableCustomAddressName ? "" : emailName.value;
-        const res = await props.newAddressPath(
-            nameToSend,
-            emailDomain.value,
-            cfToken.value,
-            enableRandomSubdomain.value
-        );
-        jwt.value = res["jwt"];
-        addressPassword.value = res["password"] || '';
-        await api.getSettings();
-        await router.push(getRouterPathWithLang("/", locale.value));
-        showAddressCredential.value = true;
-        try {
-            await props.bindUserAddress();
-        } catch (error) {
-            message.error(`${t('bindUserAddressError')}: ${error.message}`);
-        }
+      await props.bindUserAddress()
     } catch (error) {
-        message.error(error.message || "error");
+      message.error(`${t('bindUserAddressError')}: ${error.message}`)
     }
-};
+  } catch (error) {
+    message.error(error.message || 'error')
+  }
+}
 
 const addressPrefix = computed(() => {
-    // if user has role, return role prefix
-    if (userSettings.value?.user_role) {
-        return userSettings.value.user_role.prefix || "";
-    }
-    // if user has no role, return default prefix
-    return openSettings.value.prefix;
-});
+  if (userSettings.value?.user_role) {
+    return userSettings.value.user_role.prefix || ''
+  }
+  return openSettings.value.prefix
+})
 
 const canUseRandomSubdomain = computed(() => {
-    if (!emailDomain.value) {
-        return false;
-    }
-    return (openSettings.value.randomSubdomainDomains || []).includes(emailDomain.value);
-});
+  if (!emailDomain.value) {
+    return false
+  }
+  return (openSettings.value.randomSubdomainDomains || []).includes(emailDomain.value)
+})
 
 watch(canUseRandomSubdomain, (enabled) => {
-    if (!enabled) {
-        enableRandomSubdomain.value = false;
-    }
-});
+  if (!enabled) {
+    enableRandomSubdomain.value = false
+  }
+})
 
 const domainsOptions = computed(() => {
-    // if user has role, return role domains
-    if (userSettings.value.user_role) {
-        const allDomains = userSettings.value.user_role.domains;
-        if (!allDomains) return openSettings.value.domains;
-        return openSettings.value.domains.filter((domain) => {
-            return allDomains.includes(domain.value);
-        });
-    }
-    // if user has no role, return default domains
-    if (!openSettings.value.defaultDomains) {
-        return openSettings.value.domains;
-    }
-    // if user has no role and no default domains, return all domains
-    return openSettings.value.domains.filter((domain) => {
-        return openSettings.value.defaultDomains.includes(domain.value);
-    });
-});
+  if (userSettings.value.user_role) {
+    const allDomains = userSettings.value.user_role.domains
+    if (!allDomains) return openSettings.value.domains
+    return openSettings.value.domains.filter((domain) => allDomains.includes(domain.value))
+  }
+  if (!openSettings.value.defaultDomains) {
+    return openSettings.value.domains
+  }
+  return openSettings.value.domains.filter((domain) => openSettings.value.defaultDomains.includes(domain.value))
+})
 
-const showNewAddressTab = computed(() => {
-    if (openSettings.value.disableAnonymousUserCreateEmail
-        && !userSettings.value.user_email
-    ) {
-        return false;
-    }
-    return openSettings.value.enableUserCreateEmail;
-});
+const showNewAddressSection = computed(() => {
+  if (openSettings.value.disableAnonymousUserCreateEmail && !userSettings.value.user_email) {
+    return false
+  }
+  return openSettings.value.enableUserCreateEmail
+})
 
 onMounted(async () => {
-    if (!openSettings.value.domains || openSettings.value.domains.length === 0) {
-        await api.getOpenSettings(message, notification);
-    }
-    emailDomain.value = domainsOptions.value ? domainsOptions.value[0]?.value : "";
-});
+  if (!openSettings.value.domains || openSettings.value.domains.length === 0) {
+    await api.getOpenSettings(message, notification)
+  }
+  emailDomain.value = domainsOptions.value ? domainsOptions.value[0]?.value : ''
+})
 </script>
 
 <template>
-    <div>
-        <n-alert v-if="userSettings.user_email" :show-icon="false" :bordered="false" closable>
-            <span>{{ t('bindUserInfo') }}</span>
-        </n-alert>
-        <n-tabs v-if="openSettings.fetched" v-model:value="tabValue" size="large" justify-content="space-evenly">
-            <n-tab-pane name="signin" :tab="loginAndBindTag">
-                <n-form>
-                    <n-form-item-row :label="t('email')" required>
-                        <n-input v-model:value="loginAddress" />
-                    </n-form-item-row>
-                    <n-form-item-row :label="t('password')" required>
-                        <n-input v-model:value="loginPassword" type="password" show-password-on="click" />
-                    </n-form-item-row>
-                    <Turnstile ref="loginTurnstileRef" v-if="openSettings.enableGlobalTurnstileCheck"
-                        v-model:value="loginCfToken" />
-                    <n-button @click="login" :loading="loading" type="primary" block secondary strong>
-                        <template #icon>
-                            <n-icon :component="EmailOutlined" />
-                        </template>
-                        {{ loginAndBindTag }}
-                    </n-button>
-                    <n-button v-if="showNewAddressTab" @click="tabValue = 'register'" block secondary strong>
-                        <template #icon>
-                            <n-icon :component="NewLabelOutlined" />
-                        </template>
-                        {{ t('getNewEmail') }}
-                    </n-button>
-                </n-form>
-            </n-tab-pane>
-            <n-tab-pane v-if="showNewAddressTab" name="register" :tab="t('getNewEmail')">
-                <n-spin :show="generateNameLoading">
-                    <n-form>
-                        <span>
-                            <p v-if="!openSettings.disableCustomAddressName">{{ t("getNewEmailTip1") +
-                                addressRegex.source }}</p>
-                            <p v-if="!openSettings.disableCustomAddressName">{{ t("getNewEmailTip2") }}</p>
-                            <p>{{ t("getNewEmailTip3") }}</p>
-                        </span>
-                        <n-button v-if="!openSettings.disableCustomAddressName" @click="generateName"
-                            style="margin-bottom: 10px;">
-                            {{ t('generateName') }}
-                        </n-button>
-                        <n-input-group>
-                            <n-input-group-label v-if="addressPrefix">
-                                {{ addressPrefix }}
-                            </n-input-group-label>
-                            <n-input v-if="!openSettings.disableCustomAddressName" v-model:value="emailName" show-count
-                                :minlength="openSettings.minAddressLen" :maxlength="openSettings.maxAddressLen" />
-                            <n-input v-else :value="t('autoGeneratedName')" disabled />
-                            <n-input-group-label>@</n-input-group-label>
-                            <n-select v-model:value="emailDomain" :consistent-menu-width="false"
-                                :options="domainsOptions" />
-                        </n-input-group>
-                        <n-form-item-row v-if="canUseRandomSubdomain">
-                            <n-checkbox v-model:checked="enableRandomSubdomain">
-                                {{ t('enableRandomSubdomain') }}
-                            </n-checkbox>
-                            <p style="margin: 8px 0 0; opacity: 0.75;">
-                                {{ t('randomSubdomainTip') }}
-                            </p>
-                        </n-form-item-row>
-                        <Turnstile v-model:value="cfToken" />
-                        <n-button type="primary" block secondary strong @click="newEmail" :loading="loading">
-                            <template #icon>
-                                <n-icon :component="NewLabelOutlined" />
-                            </template>
-                            {{ t('getNewEmail') }}
-                        </n-button>
-                    </n-form>
-                </n-spin>
-            </n-tab-pane>
-            <n-tab-pane name="help" :tab="t('help')">
-                <n-alert :show-icon="false" :bordered="false">
-                    <span>{{ t('pleaseGetNewEmail') }}</span>
-                </n-alert>
-                <AdminContact />
-            </n-tab-pane>
-        </n-tabs>
+  <div class="login-layout">
+    <n-alert v-if="userSettings.user_email" :show-icon="false" :bordered="false" closable>
+      <span>{{ t('bindUserInfo') }}</span>
+    </n-alert>
+
+    <div v-if="openSettings.fetched" class="login-card-shell">
+      <section class="action-section primary-section">
+        <div class="section-title">{{ t('loginTitle') }}</div>
+        <div class="section-desc">{{ t('loginDesc') }}</div>
+
+        <n-form class="action-form">
+          <n-form-item-row :label="t('email')" required>
+            <n-input v-model:value="loginAddress" />
+          </n-form-item-row>
+          <n-form-item-row :label="t('password')" required>
+            <n-input v-model:value="loginPassword" type="password" show-password-on="click" />
+          </n-form-item-row>
+          <Turnstile ref="loginTurnstileRef" v-if="openSettings.enableGlobalTurnstileCheck" v-model:value="loginCfToken" />
+          <n-button @click="login" :loading="loading" type="primary" block strong class="solid-action-btn">
+            <template #icon>
+              <n-icon :component="EmailOutlined" />
+            </template>
+            {{ loginAndBindTag }}
+          </n-button>
+        </n-form>
+      </section>
+
+      <section v-if="showNewAddressSection" class="action-section secondary-section">
+        <div class="section-title">{{ t('registerTitle') }}</div>
+        <div class="section-desc">{{ t('registerDesc') }}</div>
+
+        <n-spin :show="generateNameLoading">
+          <n-form class="action-form">
+            <div class="tips-block">
+              <p v-if="!openSettings.disableCustomAddressName">{{ t('getNewEmailTip1') + addressRegex.source }}</p>
+              <p v-if="!openSettings.disableCustomAddressName">{{ t('getNewEmailTip2') }}</p>
+              <p>{{ t('getNewEmailTip3') }}</p>
+            </div>
+
+            <n-button v-if="!openSettings.disableCustomAddressName" @click="generateName">{{ t('generateName') }}</n-button>
+
+            <n-input-group>
+              <n-input-group-label v-if="addressPrefix">{{ addressPrefix }}</n-input-group-label>
+              <n-input v-if="!openSettings.disableCustomAddressName" v-model:value="emailName" show-count :minlength="openSettings.minAddressLen" :maxlength="openSettings.maxAddressLen" />
+              <n-input v-else :value="t('autoGeneratedName')" disabled />
+              <n-input-group-label>@</n-input-group-label>
+              <n-select v-model:value="emailDomain" :consistent-menu-width="false" :options="domainsOptions" />
+            </n-input-group>
+
+            <n-form-item-row v-if="canUseRandomSubdomain">
+              <n-checkbox v-model:checked="enableRandomSubdomain">{{ t('enableRandomSubdomain') }}</n-checkbox>
+              <p class="subdomain-tip">{{ t('randomSubdomainTip') }}</p>
+            </n-form-item-row>
+
+            <Turnstile v-model:value="cfToken" />
+
+            <n-button type="primary" block strong secondary class="outline-action-btn" @click="newEmail" :loading="loading">
+              <template #icon>
+                <n-icon :component="NewLabelOutlined" />
+              </template>
+              {{ t('getNewEmail') }}
+            </n-button>
+          </n-form>
+        </n-spin>
+      </section>
+
+      <section class="helper-section">
+        <div class="helper-copy">{{ t('helpText') }}</div>
+        <AdminContact />
+      </section>
     </div>
+  </div>
 </template>
 
-
 <style scoped>
-.n-alert {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    text-align: center;
+.login-layout {
+  text-align: left;
 }
 
-.n-form .n-button {
-    margin-top: 10px;
+.login-card-shell {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.06);
 }
 
-.n-form {
-    text-align: left;
+.action-section + .action-section {
+  margin-top: 22px;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.section-desc {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.action-form {
+  margin-top: 18px;
+}
+
+.action-form :deep(.n-button) {
+  margin-top: 12px;
+}
+
+.solid-action-btn {
+  min-height: 44px;
+}
+
+.outline-action-btn {
+  min-height: 44px;
+  border: 1px solid #dbe3f1;
+}
+
+.tips-block {
+  margin-bottom: 12px;
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.subdomain-tip {
+  margin: 8px 0 0;
+  opacity: 0.75;
+}
+
+.helper-section {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid #eef2f7;
+}
+
+.helper-copy {
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+@media (max-width: 768px) {
+  .login-card-shell {
+    padding: 18px;
+    border-radius: 18px;
+  }
 }
 </style>

@@ -17,6 +17,8 @@
 
 ### Improvements
 
+- style: |Frontend| Rework the mailbox UI toward a duckmail-style shell with a fixed left sidebar, compact mailbox header, single-column card inbox, standalone mail detail view, sectioned account page, and centered login card actions
+
 ## v1.5.0(main)
 
 ### Features

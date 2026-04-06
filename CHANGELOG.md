@@ -17,6 +17,8 @@
 
 ### Improvements
 
+- style: |前端| 登录页改为居中卡片双操作区，首页工作区重构为 duckmail 风格壳层：左侧固定侧边栏、顶部邮箱 header、单列卡片收件箱、独立邮件详情页与分区式账户页
+
 ## v1.5.0(main)
 
 ### Features

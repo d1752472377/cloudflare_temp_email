@@ -42,6 +42,7 @@
   },
   "devDependencies": {
     "@vicons/fa": "^0.13.0",
+    "@vicons/ionicons5": "^0.13.0",
     "@vicons/material": "^0.13.0",
     "@vitejs/plugin-vue": "^6.0.5",
     "jsdom": "^28.1.0",

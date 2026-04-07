@@ -87,6 +87,9 @@ const messages: LocaleMessages = {
     FailedDeleteUserMsg: "删除用户失败",
     InvalidUserIdMsg: "无效的 user_id",
     InvalidRoleTextMsg: "无效的 role_text",
+    InvalidRoleConfigMsg: "无效的角色配置",
+    DuplicateRoleNameMsg: "存在重复的角色名称",
+    ReservedRoleInUseMsg: "该角色正在被当前 Worker 配置使用，无法重命名或删除",
 
     // SQL validation
     SqlEmptyMsg: "SQL 语句为空",

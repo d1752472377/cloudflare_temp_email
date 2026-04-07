@@ -718,7 +718,7 @@ export const commonParseMail = async (parsedEmailContext: ParsedEmailContext): P
 export const commonGetUserRole = async (
     c: Context<HonoCustomType>, user_id: number
 ): Promise<UserRole | undefined | null> => {
-    const user_roles = getUserRoles(c);
+    const user_roles = await getUserRoles(c);
     const role_text = await c.env.DB.prepare(
         `SELECT role_text FROM user_roles where user_id = ?`
     ).bind(user_id).first<string | undefined | null>("role_text");

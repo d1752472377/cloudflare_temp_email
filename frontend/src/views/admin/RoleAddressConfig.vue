@@ -37,8 +37,8 @@ const tableData = ref([])
 
 const fetchUserRoles = async () => {
     try {
-        const results = await api.fetch(`/admin/user_roles`);
-        systemRoles.value = results;
+        const { roles } = await api.fetch(`/admin/roles`);
+        systemRoles.value = roles;
     } catch (error) {
         console.log(error)
         message.error(error.message || "error");

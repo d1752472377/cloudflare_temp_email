@@ -4,6 +4,40 @@ import { UserSettings, RoleAddressConfig } from "./models";
 import { CONSTANTS } from "./constants";
 import { compressText } from "./gzip";
 
+const normalizeUserRole = (role: Partial<UserRole> | null | undefined): UserRole | null => {
+    const roleName = getStringValue(role?.role).trim();
+    if (!roleName) {
+        return null;
+    }
+    const prefix = getStringValue(role?.prefix).trim();
+    const domains = Array.isArray(role?.domains)
+        ? role.domains
+            .map((domain) => getStringValue(domain).trim())
+            .filter((domain) => domain.length > 0)
+        : [];
+    return {
+        role: roleName,
+        prefix: prefix || null,
+        domains,
+    };
+}
+
+const normalizeUserRoles = (roles: unknown): UserRole[] => {
+    if (!Array.isArray(roles)) {
+        return [];
+    }
+    const uniqueRoles = new Set<string>();
+    return roles.reduce<UserRole[]>((result, item) => {
+        const normalized = normalizeUserRole(item as Partial<UserRole>);
+        if (!normalized || uniqueRoles.has(normalized.role)) {
+            return result;
+        }
+        uniqueRoles.add(normalized.role);
+        result.push(normalized);
+        return result;
+    }, []);
+}
+
 export const getJsonObjectValue = <T = any>(
     value: string | any
 ): T | null => {
@@ -158,20 +192,24 @@ export const getRandomSubdomainDomains = (c: Context<HonoCustomType>): string[] 
     return getStringArray(c.env.RANDOM_SUBDOMAIN_DOMAINS);
 }
 
-export const getUserRoles = (c: Context<HonoCustomType>): UserRole[] => {
+export const getUserRoles = async (c: Context<HonoCustomType>): Promise<UserRole[]> => {
+    const storedRoles = await getJsonSetting<UserRole[]>(c, CONSTANTS.USER_ROLES_KEY);
+    if (storedRoles) {
+        return normalizeUserRoles(storedRoles);
+    }
     if (!c.env.USER_ROLES) {
         return [];
     }
     // check if USER_ROLES is an array, if not use json.parse
     if (!Array.isArray(c.env.USER_ROLES)) {
         try {
-            return JSON.parse(c.env.USER_ROLES);
+            return normalizeUserRoles(JSON.parse(c.env.USER_ROLES));
         } catch (e) {
             console.error("Failed to parse USER_ROLES", e);
             return [];
         }
     }
-    return c.env.USER_ROLES;
+    return normalizeUserRoles(c.env.USER_ROLES);
 }
 
 export const getAnotherWorkerList = (c: Context<HonoCustomType>): AnotherWorker[] => {

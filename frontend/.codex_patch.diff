@@ -1,0 +1,140 @@
+*** Begin Patch
+*** Update File: src/views/index/AddressBar.vue
+@@
+       userLogin: 'User Login',
+       addressManage: 'Manage',
+       copyAddress: 'Copy address',
+       simpleMode: 'Simple Mode',
+-      accountEntry: 'Account',
+       workspace: 'Mailbox Workspace',
+       appearance: 'Appearance',
+       status: 'Status',
+       inboxAddress: 'Current mailbox',
++      mailboxAccount: 'Mailbox Account',
++      mailboxEmail: 'Mailbox Email',
++      mailboxPassword: 'Mailbox Password',
++      loginAnotherMailboxAccount: 'Login Another Mailbox Account',
++      createNewMailboxAccount: 'Create New Mailbox Account',
++      userSettings: 'User Settings',
++      notAvailable: 'Not available',
+@@
+ const headerTitle = computed(() => props.title || t('workspace'))
+ const avatarLetter = computed(() => (settings.value.address || 'M').slice(0, 1).toUpperCase())
+ const languageLabel = computed(() => (locale.value === 'zh' ? 'EN' : '涓?))
++const currentMailboxEmail = computed(() => settings.value.address || t('notAvailable'))
++const currentMailboxPassword = computed(() => addressPassword.value || t('notAvailable'))
+@@
+ const openAppearance = () => {
+   emit('toggle-simple')
+ }
++
++const openMailboxAccountManage = () => {
++  showAddressManage.value = true
++}
+@@
+-          <n-button v-if="userJwt" tertiary block @click="onUserLogin">
+-            <template #icon>
+-              <n-icon :component="GridOutline" />
+-            </template>
+-            {{ t('accountEntry') }}
+-          </n-button>
+           <n-button v-if="showSimpleToggle" tertiary block @click="openAppearance">
+             {{ t('simpleMode') }}
+           </n-button>
+         </div>
+       </n-popover>
+ 
+-      <button class="avatar-chip" @click="onUserLogin">
+-        <n-icon :component="User" />
+-      </button>
++      <n-popover trigger="click" placement="bottom-end">
++        <template #trigger>
++          <button class="avatar-chip">
++            <n-icon :component="User" />
++          </button>
++        </template>
++        <div class="account-popover">
++          <div class="account-section">
++            <div class="account-section-title">{{ t('mailboxAccount') }}</div>
++            <div class="account-info-row">
++              <span class="account-info-label">{{ t('mailboxEmail') }}</span>
++              <span class="account-info-value">{{ currentMailboxEmail }}</span>
++            </div>
++            <div class="account-info-row">
++              <span class="account-info-label">{{ t('mailboxPassword') }}</span>
++              <span class="account-info-value">{{ currentMailboxPassword }}</span>
++            </div>
++          </div>
++
++          <div class="account-section">
++            <n-button tertiary block @click="openMailboxAccountManage">
++              <template #icon>
++                <n-icon :component="ExchangeAlt" />
++              </template>
++              {{ t('loginAnotherMailboxAccount') }}
++            </n-button>
++            <n-button tertiary block @click="openMailboxAccountManage">
++              <template #icon>
++                <n-icon :component="ExchangeAlt" />
++              </template>
++              {{ t('createNewMailboxAccount') }}
++            </n-button>
++
++          </div>
++
++          <div class="account-section">
++            <n-button tertiary block @click="onUserLogin">
++              <template #icon>
++                <n-icon :component="GridOutline" />
++              </template>
++              {{ t('userSettings') }}
++            </n-button>
++          </div>
++        </div>
++      </n-popover>
+@@
+ .header-popover-actions {
+   display: grid;
+   gap: 8px;
+   min-width: 180px;
+ }
++
++.account-popover {
++  display: grid;
++  gap: 12px;
++  min-width: 280px;
++}
++
++.account-section {
++  display: grid;
++  gap: 8px;
++}
++
++.account-section + .account-section {
++  padding-top: 12px;
++  border-top: 1px solid #e5e7eb;
++}
++
++.account-section-title {
++  font-size: 13px;
++  font-weight: 700;
++  color: #111827;
++}
++
++.account-info-row {
++  display: grid;
++  gap: 4px;
++}
++
++.account-info-label {
++  font-size: 12px;
++  color: #6b7280;
++}
++
++.account-info-value {
++  font-size: 14px;
++  font-weight: 600;
++  color: #111827;
++  word-break: break-all;
++}
+*** End Patch

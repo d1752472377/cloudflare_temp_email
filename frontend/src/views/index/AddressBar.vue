@@ -5,23 +5,21 @@ import { useRoute, useRouter } from 'vue-router'
 import { User, ExchangeAlt, Copy } from '@vicons/fa'
 import {
   KeyOutline,
-  GridOutline,
   SettingsOutline,
   LanguageOutline,
   MoonOutline,
   SunnyOutline,
   GlobeOutline,
+  GridOutline,
 } from '@vicons/ionicons5'
 import useClipboard from 'vue-clipboard3'
 
 import { useGlobalState } from '../../store'
 import { api } from '../../api'
-import Login from '../common/Login.vue'
 import TelegramAddress from './TelegramAddress.vue'
 import LocalAddress from './LocalAddress.vue'
 import AddressManagement from '../user/AddressManagement.vue'
 import { getRouterPathWithLang } from '../../utils'
-import AddressSelect from '../../components/AddressSelect.vue'
 
 const props = defineProps({
   title: {
@@ -46,6 +44,7 @@ const {
   settings,
   showAddressCredential,
   userJwt,
+  userSettings,
   isTelegram,
   addressPassword,
   openSettings,
@@ -58,7 +57,8 @@ const { locale, t } = useI18n({
   messages: {
     en: {
       ok: 'OK',
-      fetchAddressError: 'Mail address credential is invalid or account not exist, it may be network connection issue, please try again later.',
+      fetchAddressError:
+        'Mail address credential is invalid or account not exist, it may be network connection issue, please try again later.',
       addressCredential: 'Mailbox Credential',
       linkWithAddressCredential: 'Open to auto login email link',
       addressCredentialTip: 'Please save the mailbox credential if you need a direct login token.',
@@ -67,28 +67,42 @@ const { locale, t } = useI18n({
       addressManage: 'Manage',
       copyAddress: 'Copy address',
       simpleMode: 'Simple Mode',
-      accountEntry: 'Account',
       workspace: 'Mailbox Workspace',
       appearance: 'Appearance',
       status: 'Status',
       inboxAddress: 'Current mailbox',
+      mailboxAccount: 'Mailbox Account',
+      mailboxEmail: 'Mailbox Email',
+      mailboxPasswordLabel: 'Mailbox Password',
+      loginAnotherMailboxAccount: 'Login Another Mailbox Account',
+      createNewMailboxAccount: 'Create New Mailbox Account',
+      userSettings: 'User Settings',
+      notAvailable: 'Not available',
     },
     zh: {
-      ok: '确定',
-      fetchAddressError: '邮箱地址凭证无效或邮箱地址不存在，也可能是网络连接异常，请稍后再尝试。',
-      addressCredential: '邮箱凭据',
-      linkWithAddressCredential: '打开即可自动登录邮箱的链接',
-      addressCredentialTip: '如果你需要直接登录令牌，请保存好邮箱凭据。',
-      addressPassword: '地址密码',
-      userLogin: '用户登录',
-      addressManage: '管理',
-      copyAddress: '复制地址',
-      simpleMode: '极简模式',
-      accountEntry: '账户',
-      workspace: '邮箱工作台',
-      appearance: '外观',
-      status: '状态',
-      inboxAddress: '当前邮箱',
+      ok: '\u786e\u5b9a',
+      fetchAddressError:
+        '\u90ae\u7bb1\u51ed\u8bc1\u65e0\u6548\u6216\u8d26\u53f7\u4e0d\u5b58\u5728\uff0c\u4e5f\u53ef\u80fd\u662f\u7f51\u7edc\u8fde\u63a5\u5f02\u5e38\uff0c\u8bf7\u7a0d\u540e\u518d\u5c1d\u8bd5\u3002',
+      addressCredential: '\u90ae\u7bb1\u51ed\u636e',
+      linkWithAddressCredential: '\u6253\u5f00\u5373\u53ef\u81ea\u52a8\u767b\u5f55\u90ae\u7bb1\u7684\u94fe\u63a5',
+      addressCredentialTip:
+        '\u5982\u679c\u4f60\u9700\u8981\u76f4\u63a5\u767b\u5f55\u4ee4\u724c\uff0c\u8bf7\u4fdd\u5b58\u597d\u90ae\u7bb1\u51ed\u636e\u3002',
+      addressPassword: '\u5730\u5740\u5bc6\u7801',
+      userLogin: '\u7528\u6237\u767b\u5f55',
+      addressManage: '\u7ba1\u7406',
+      copyAddress: '\u590d\u5236\u5730\u5740',
+      simpleMode: '\u6781\u7b80\u6a21\u5f0f',
+      workspace: '\u90ae\u7bb1\u5de5\u4f5c\u533a',
+      appearance: '\u5916\u89c2',
+      status: '\u72b6\u6001',
+      inboxAddress: '\u5f53\u524d\u90ae\u7bb1',
+      mailboxAccount: '\u90ae\u7bb1\u8d26\u6237',
+      mailboxEmail: '\u90ae\u7bb1\u5730\u5740',
+      mailboxPasswordLabel: '\u90ae\u7bb1\u5bc6\u7801',
+      loginAnotherMailboxAccount: '\u767b\u5f55\u5176\u4ed6\u90ae\u7bb1\u8d26\u6237',
+      createNewMailboxAccount: '\u521b\u5efa\u65b0\u90ae\u7bb1\u8d26\u6237',
+      userSettings: '\u7528\u6237\u8bbe\u7f6e',
+      notAvailable: '\u672a\u4fdd\u5b58',
     },
   },
 })
@@ -98,6 +112,10 @@ const showAddressManage = ref(false)
 const getUrlWithJwt = () => `${window.location.origin}/?jwt=${jwt.value}`
 
 const onUserLogin = async () => {
+  if (!shouldRouteToUserSettings.value) {
+    await router.push(getRouterPathWithLang('/', locale.value))
+    return
+  }
   await router.push(getRouterPathWithLang('/user', locale.value))
 }
 
@@ -112,8 +130,12 @@ const copyAddress = async () => {
 }
 
 const headerTitle = computed(() => props.title || t('workspace'))
-const avatarLetter = computed(() => (settings.value.address || 'M').slice(0, 1).toUpperCase())
 const languageLabel = computed(() => (locale.value === 'zh' ? 'EN' : '中'))
+const currentMailboxEmail = computed(() => settings.value.address || t('notAvailable'))
+const currentMailboxPassword = computed(() => addressPassword.value || t('notAvailable'))
+const hasUserAccount = computed(() => !!userSettings.value.user_email)
+const requireUserLogin = computed(() => !!openSettings.value.requireUserLogin)
+const shouldRouteToUserSettings = computed(() => !requireUserLogin.value || hasUserAccount.value)
 
 const changeLocale = async () => {
   if (locale.value === 'zh') {
@@ -125,6 +147,10 @@ const changeLocale = async () => {
 
 const openAppearance = () => {
   emit('toggle-simple')
+}
+
+const openMailboxAccountManage = () => {
+  showAddressManage.value = true
 }
 
 const openStatus = () => {
@@ -206,24 +232,58 @@ onMounted(async () => {
             </template>
             {{ t('addressManage') }}
           </n-button>
-          <n-button v-if="userJwt" tertiary block @click="onUserLogin">
-            <template #icon>
-              <n-icon :component="GridOutline" />
-            </template>
-            {{ t('accountEntry') }}
-          </n-button>
           <n-button v-if="showSimpleToggle" tertiary block @click="openAppearance">
             {{ t('simpleMode') }}
           </n-button>
         </div>
       </n-popover>
 
-      <button class="avatar-chip" @click="onUserLogin">
-        <n-icon :component="User" />
-      </button>
+      <n-popover trigger="click" placement="bottom-end">
+        <template #trigger>
+          <button class="avatar-chip">
+            <n-icon :component="User" />
+          </button>
+        </template>
+        <div class="account-popover">
+          <div class="account-section">
+            <div class="account-section-title">{{ t('mailboxAccount') }}</div>
+            <div class="account-info-row">
+              <span class="account-info-label">{{ t('mailboxEmail') }}</span>
+              <span class="account-info-value">{{ currentMailboxEmail }}</span>
+            </div>
+            <div class="account-info-row">
+              <span class="account-info-label">{{ t('mailboxPasswordLabel') }}</span>
+              <span class="account-info-value">{{ currentMailboxPassword }}</span>
+            </div>
+          </div>
+
+          <div class="account-section">
+            <n-button tertiary block @click="openMailboxAccountManage">
+              <template #icon>
+                <n-icon :component="ExchangeAlt" />
+              </template>
+              {{ t('loginAnotherMailboxAccount') }}
+            </n-button>
+            <n-button tertiary block @click="openMailboxAccountManage">
+              <template #icon>
+                <n-icon :component="ExchangeAlt" />
+              </template>
+              {{ t('createNewMailboxAccount') }}
+            </n-button>
+          </div>
+
+          <div v-if="hasUserAccount || requireUserLogin" class="account-section">
+            <n-button tertiary block @click="onUserLogin">
+              <template #icon>
+                <n-icon :component="GridOutline" />
+              </template>
+              {{ t('userSettings') }}
+            </n-button>
+          </div>
+        </div>
+      </n-popover>
     </div>
 
-    <!-- Modals -->
     <n-modal v-model:show="showAddressCredential" preset="dialog" :title="t('addressCredential')">
       <span>
         <p>{{ t('addressCredentialTip') }}</p>
@@ -370,28 +430,43 @@ onMounted(async () => {
   min-width: 180px;
 }
 
-.login-shell,
-.manage-card {
-  width: 100%;
-  max-width: 640px;
+.account-popover {
+  display: grid;
+  gap: 12px;
+  min-width: 280px;
 }
 
-.center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 32px 20px;
+.account-section {
+  display: grid;
+  gap: 8px;
 }
 
-.login-center {
-  min-height: 100vh;
-  background: #f0f2f5;
+.account-section + .account-section {
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
 }
 
-.user-login-link-row {
-  margin-top: 12px;
-  display: flex;
-  justify-content: center;
+.account-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.account-info-row {
+  display: grid;
+  gap: 4px;
+}
+
+.account-info-label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.account-info-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  word-break: break-all;
 }
 
 @media (max-width: 768px) {

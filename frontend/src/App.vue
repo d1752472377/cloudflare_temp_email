@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { darkTheme, NGlobalStyle, zhCN } from 'naive-ui'
 import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
@@ -44,6 +44,41 @@ const shouldShowUserLoginGate = computed(() => (
   && !userSettings.value.user_email
   && !isAdminRoute.value
   && !isOauthCallbackRoute.value
+))
+const gateCopy = computed(() => (
+  locale.value === 'zh'
+    ? {
+      badge: 'DOVISLAB WORKSPACE',
+      title: openSettings.value.title || '临时邮箱工作台',
+      desc: '先登录用户账户，再统一管理邮箱地址、收件流程、发送权限与账户安全设置。',
+      points: [
+        '统一入口，避免匿名状态下的功能割裂',
+        '登录后继续创建、绑定和管理邮箱地址',
+        'Passkey、OAuth2 与验证码流程集中在一个界面',
+      ],
+      stats: [
+        { title: '账户优先', text: '登录后进入完整工作区' },
+        { title: '安全验证', text: '支持 Turnstile、Passkey 和 OAuth2' },
+      ],
+      asideTitle: '统一访问入口',
+      asideDesc: '完成身份验证后，再进入完整的 Cloudflare Workers 邮箱工作区。',
+    }
+    : {
+      badge: 'DOVISLAB WORKSPACE',
+      title: openSettings.value.title || 'Temp Mail Workspace',
+      desc: 'Sign in first, then manage addresses, inbox workflows, sending access, and account security in one place.',
+      points: [
+        'One account-first entry instead of fragmented anonymous flows',
+        'Create, bind, and manage mailbox addresses after authentication',
+        'Passkey, OAuth2, and verification flows in one consistent workspace',
+      ],
+      stats: [
+        { title: 'Account First', text: 'Unlock the full workspace after login' },
+        { title: 'Security Ready', text: 'Turnstile, Passkey, and OAuth2 supported' },
+      ],
+      asideTitle: 'Unified Access',
+      asideDesc: 'Authenticate once and continue with the full Cloudflare Workers mail workspace.',
+    }
 ))
 
 if (showAd.value) {
@@ -104,19 +139,25 @@ onMounted(async () => {
         <n-message-provider container-style="margin-top: 20px;">
           <template v-if="shouldShowUserLoginGate">
             <div class="auth-gate-shell">
+              <div class="auth-gate-blob auth-gate-blob-a"></div>
+              <div class="auth-gate-blob auth-gate-blob-b"></div>
               <div class="auth-gate-panel auth-gate-copy">
-                <div class="auth-gate-badge">DOVISLAB</div>
-                <h1 class="auth-gate-title">{{ openSettings.title || 'Temp Mail Workspace' }}</h1>
-                <p class="auth-gate-desc">
-                  {{ locale === 'zh'
-                    ? '请先登录用户账号，再创建、绑定和管理邮箱地址。'
-                    : 'Sign in with your user account first, then create, bind, and manage mailbox addresses.' }}
-                </p>
+                <div class="auth-gate-badge">{{ gateCopy.badge }}</div>
+                <h1 class="auth-gate-title">{{ gateCopy.title }}</h1>
+                <p class="auth-gate-desc">{{ gateCopy.desc }}</p>
+                <div class="auth-gate-stats">
+                  <div v-for="item in gateCopy.stats" :key="item.title" class="auth-gate-stat">
+                    <strong>{{ item.title }}</strong>
+                    <span>{{ item.text }}</span>
+                  </div>
+                </div>
                 <ul class="auth-gate-points">
-                  <li>{{ locale === 'zh' ? '统一入口，先登录用户账号' : 'One entry point with user account login first' }}</li>
-                  <li>{{ locale === 'zh' ? '邮箱地址改为登录后创建或绑定' : 'Mailbox addresses are created or bound after login' }}</li>
-                  <li>{{ locale === 'zh' ? '登录后进入完整工作区' : 'Enter the full workspace after login' }}</li>
+                  <li v-for="point in gateCopy.points" :key="point">{{ point }}</li>
                 </ul>
+                <div class="auth-gate-aside">
+                  <span class="auth-gate-aside-label">{{ gateCopy.asideTitle }}</span>
+                  <p>{{ gateCopy.asideDesc }}</p>
+                </div>
               </div>
               <div class="auth-gate-panel auth-gate-form">
                 <UserLogin />
@@ -171,75 +212,198 @@ onMounted(async () => {
 
 <style scoped>
 .auth-gate-shell {
+  position: relative;
+  overflow: hidden;
   min-height: 100vh;
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(360px, 460px);
-  gap: 24px;
-  padding: 32px;
-  background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+  grid-template-columns: minmax(0, 1.15fr) minmax(360px, 500px);
+  gap: 28px;
+  padding: 28px;
+  background:
+    radial-gradient(circle at top left, rgba(249, 115, 22, 0.16), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.18), transparent 28%),
+    linear-gradient(135deg, #f8fafc 0%, #fff7ed 42%, #eff6ff 100%);
   align-items: stretch;
 }
 
+.auth-gate-blob {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(12px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.auth-gate-blob-a {
+  width: 360px;
+  height: 360px;
+  top: -120px;
+  right: 22%;
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.28), rgba(249, 115, 22, 0));
+  animation: gateFloat 11s ease-in-out infinite;
+}
+
+.auth-gate-blob-b {
+  width: 420px;
+  height: 420px;
+  bottom: -180px;
+  left: -80px;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.26), rgba(14, 165, 233, 0));
+  animation: gateFloat 14s ease-in-out infinite reverse;
+}
+
 .auth-gate-panel {
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(226, 232, 240, 0.9);
-  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+  position: relative;
+  z-index: 1;
+  border-radius: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.12);
+  backdrop-filter: blur(20px);
+  animation: riseIn 700ms ease both;
 }
 
 .auth-gate-copy {
-  padding: 48px;
+  padding: 56px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  background: linear-gradient(160deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.88));
+  color: #e2e8f0;
 }
 
 .auth-gate-badge {
   display: inline-flex;
   width: fit-content;
-  padding: 8px 12px;
+  padding: 9px 14px;
   border-radius: 999px;
-  background: #e0e7ff;
-  color: #4338ca;
+  background: rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.16em;
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .auth-gate-title {
-  margin: 20px 0 12px;
-  font-size: 42px;
-  line-height: 1.1;
-  color: #0f172a;
+  margin: 24px 0 14px;
+  font-size: clamp(2.4rem, 3.8vw, 4.5rem);
+  line-height: 0.98;
+  color: #f8fafc;
+  letter-spacing: -0.04em;
 }
 
 .auth-gate-desc {
   margin: 0;
-  max-width: 560px;
+  max-width: 600px;
   font-size: 18px;
-  line-height: 1.7;
-  color: #475569;
+  line-height: 1.8;
+  color: rgba(226, 232, 240, 0.78);
+}
+
+.auth-gate-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.auth-gate-stat {
+  padding: 18px 20px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: transform 220ms ease, border-color 220ms ease, background 220ms ease;
+}
+
+.auth-gate-stat:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.auth-gate-stat strong,
+.auth-gate-stat span {
+  display: block;
+}
+
+.auth-gate-stat strong {
+  font-size: 17px;
+  color: #ffffff;
+}
+
+.auth-gate-stat span {
+  margin-top: 8px;
+  line-height: 1.6;
+  color: rgba(226, 232, 240, 0.72);
 }
 
 .auth-gate-points {
   margin: 28px 0 0;
-  padding-left: 20px;
-  color: #334155;
-  line-height: 1.9;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 14px;
+  color: #e2e8f0;
   font-size: 16px;
 }
 
+.auth-gate-points li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  line-height: 1.8;
+}
+
+.auth-gate-points li::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  margin-top: 9px;
+  border-radius: 999px;
+  flex: none;
+  background: linear-gradient(135deg, #fb923c, #38bdf8);
+  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.06);
+}
+
+.auth-gate-aside {
+  margin-top: 32px;
+  padding: 20px 22px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(251, 146, 60, 0.18), rgba(56, 189, 248, 0.12));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  transition: transform 220ms ease, border-color 220ms ease;
+}
+
+.auth-gate-aside:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.auth-gate-aside-label {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.auth-gate-aside p {
+  margin: 12px 0 0;
+  line-height: 1.7;
+  color: rgba(241, 245, 249, 0.88);
+}
+
 .auth-gate-form {
-  padding: 28px;
+  padding: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(255, 255, 255, 0.72);
 }
 
-.auth-gate-form :deep(.center) {
-  width: 100%;
-}
-
+.auth-gate-form :deep(.center),
+.auth-gate-form :deep(.auth-card),
 .auth-gate-form :deep(.n-tabs) {
   width: 100%;
 }
@@ -263,18 +427,42 @@ onMounted(async () => {
   height: 100%;
 }
 
+@keyframes gateFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(0, 18px, 0) scale(1.06);
+  }
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 900px) {
   .auth-gate-shell {
     grid-template-columns: 1fr;
+    gap: 18px;
     padding: 16px;
   }
 
   .auth-gate-copy {
-    padding: 28px 22px;
+    padding: 30px 22px;
   }
 
-  .auth-gate-title {
-    font-size: 30px;
+  .auth-gate-stats {
+    grid-template-columns: 1fr;
   }
 
   .auth-gate-form {

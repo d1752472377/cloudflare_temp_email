@@ -33,7 +33,7 @@ export default {
 
             "ADMIN_USER_ROLE": utils.getStringValue(c.env.ADMIN_USER_ROLE),
             "USER_DEFAULT_ROLE": utils.getStringValue(c.env.USER_DEFAULT_ROLE),
-            "USER_ROLES": utils.getUserRoles(c),
+            "USER_ROLES": await utils.getUserRoles(c),
             "NO_LIMIT_SEND_ROLE": utils.getSplitStringListValue(c.env.NO_LIMIT_SEND_ROLE),
 
             "ADMIN_CONTACT": c.env.ADMIN_CONTACT,

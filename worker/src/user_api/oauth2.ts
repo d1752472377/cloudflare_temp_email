@@ -131,7 +131,7 @@ export default {
         // process user roles
         const defaultRole = getStringValue(c.env.USER_DEFAULT_ROLE);
         if (defaultRole) {
-            const user_roles = getUserRoles(c);
+            const user_roles = await getUserRoles(c);
             if (!user_roles.find((r) => r.role === defaultRole)) {
                 return c.text(msgs.InvalidUserDefaultRoleMsg, 500);
             }

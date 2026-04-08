@@ -87,6 +87,9 @@ const messages: LocaleMessages = {
     FailedDeleteUserMsg: "Failed to delete user",
     InvalidUserIdMsg: "Invalid user_id",
     InvalidRoleTextMsg: "Invalid role_text",
+    InvalidRoleConfigMsg: "Invalid role config",
+    DuplicateRoleNameMsg: "Duplicate role name",
+    ReservedRoleInUseMsg: "Role is used by current worker config and cannot be renamed or removed",
 
     // SQL validation
     SqlEmptyMsg: "SQL statement is empty",

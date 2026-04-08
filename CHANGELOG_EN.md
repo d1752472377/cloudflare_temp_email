@@ -10,6 +10,7 @@
 
 ### Features
 
+- feat: |Admin| Add a role management page in the admin panel to create and edit roles, and persist role definitions in system settings
 - feat: |Login| Add `REQUIRE_USER_LOGIN` mode so unauthenticated visitors can no longer enter the app, create mailboxes, or use direct mailbox-password login; the homepage now becomes a unified user-login entry and mailbox addresses are created/bound only after sign-in
 
 ### Bug Fixes

@@ -1,11 +1,57 @@
-import { Context } from 'hono';
+import { Context } from "hono";
 
 import { CONSTANTS } from '../constants';
-import { getJsonSetting, saveSetting, checkUserPassword, getDomains, getUserRoles } from '../utils';
+import { getJsonSetting, saveSetting, checkUserPassword, getDomains, getUserRoles, getStringValue } from '../utils';
 import { UserSettings, GeoData, UserInfo, RoleAddressConfig } from "../models";
 import { handleListQuery } from '../common'
 import UserBindAddressModule from '../user_api/bind_address';
 import i18n from '../i18n';
+
+const normalizeRolePayload = (roles: unknown): UserRole[] => {
+    if (!Array.isArray(roles)) {
+        return [];
+    }
+    const uniqueRoles = new Set<string>();
+    const normalizedRoles: UserRole[] = [];
+    for (const item of roles) {
+        const roleName = getStringValue((item as UserRole)?.role).trim();
+        if (!roleName || uniqueRoles.has(roleName)) {
+            continue;
+        }
+        uniqueRoles.add(roleName);
+        const prefix = getStringValue((item as UserRole)?.prefix).trim();
+        const domains = Array.isArray((item as UserRole)?.domains)
+            ? (item as UserRole).domains
+                .map((domain) => getStringValue(domain).trim())
+                .filter((domain) => domain.length > 0)
+            : [];
+        normalizedRoles.push({
+            role: roleName,
+            prefix: prefix || null,
+            domains,
+        });
+    }
+    return normalizedRoles;
+}
+
+const buildRoleRenameMap = (oldRoles: UserRole[], newRoles: UserRole[]): Record<string, string> => {
+    const oldRoleMap = new Map(oldRoles.map((role) => [role.role, role]));
+    const renameMap: Record<string, string> = {};
+    for (const role of newRoles) {
+        if (oldRoleMap.has(role.role)) {
+            continue;
+        }
+        const matchedOldRole = oldRoles.find((oldRole) => (
+            getStringValue(oldRole.prefix) === getStringValue(role.prefix)
+            && JSON.stringify(oldRole.domains || []) === JSON.stringify(role.domains || [])
+            && !newRoles.some((nextRole) => nextRole.role === oldRole.role)
+        ));
+        if (matchedOldRole) {
+            renameMap[matchedOldRole.role] = role.role;
+        }
+    }
+    return renameMap;
+}
 
 export default {
     getSetting: async (c: Context<HonoCustomType>) => {
@@ -123,6 +169,71 @@ export default {
         }
         return c.json({ success: true });
     },
+    getRoles: async (c: Context<HonoCustomType>) => {
+        const roles = await getUserRoles(c);
+        return c.json({ roles });
+    },
+    saveRoles: async (c: Context<HonoCustomType>) => {
+        const msgs = i18n.getMessagesbyContext(c);
+        const { roles } = await c.req.json<{ roles: UserRole[] }>();
+        if (!Array.isArray(roles)) {
+            return c.text(msgs.InvalidRoleConfigMsg, 400);
+        }
+        const normalizedRoles = normalizeRolePayload(roles);
+        const inputRoleNames = roles
+            .map((role) => getStringValue(role?.role).trim())
+            .filter((role) => role.length > 0);
+        if (normalizedRoles.length !== inputRoleNames.length) {
+            return c.text(msgs.DuplicateRoleNameMsg, 400);
+        }
+
+        const currentRoles = await getUserRoles(c);
+        const nextRoleNames = new Set(normalizedRoles.map((role) => role.role));
+        const currentRoleNames = new Set(currentRoles.map((role) => role.role));
+
+        const reservedRoles = [
+            getStringValue(c.env.ADMIN_USER_ROLE).trim(),
+            getStringValue(c.env.USER_DEFAULT_ROLE).trim(),
+        ].filter((role) => role.length > 0);
+        for (const reservedRole of reservedRoles) {
+            if (currentRoleNames.has(reservedRole) && !nextRoleNames.has(reservedRole)) {
+                return c.text(`${msgs.ReservedRoleInUseMsg}: ${reservedRole}`, 400);
+            }
+        }
+
+        const renameMap = buildRoleRenameMap(currentRoles, normalizedRoles);
+        const removedRoles = currentRoles.filter((role) => !nextRoleNames.has(role.role) && !renameMap[role.role]);
+        if (removedRoles.some((role) => reservedRoles.includes(role.role))) {
+            return c.text(msgs.ReservedRoleInUseMsg, 400);
+        }
+
+        await saveSetting(c, CONSTANTS.USER_ROLES_KEY, JSON.stringify(normalizedRoles));
+
+        for (const [oldRole, newRole] of Object.entries(renameMap)) {
+            await c.env.DB.prepare(
+                `UPDATE user_roles SET role_text = ?, updated_at = datetime('now') WHERE role_text = ?`
+            ).bind(newRole, oldRole).run();
+        }
+
+        if (removedRoles.length > 0) {
+            const placeholders = removedRoles.map(() => '?').join(', ');
+            await c.env.DB.prepare(
+                `DELETE FROM user_roles WHERE role_text IN (${placeholders})`
+            ).bind(...removedRoles.map((role) => role.role)).run();
+        }
+
+        const roleAddressConfig = await getJsonSetting<RoleAddressConfig>(c, CONSTANTS.ROLE_ADDRESS_CONFIG_KEY) || {};
+        const nextRoleAddressConfig: RoleAddressConfig = {};
+        for (const role of normalizedRoles) {
+            const previousKey = Object.entries(renameMap).find(([, nextRole]) => nextRole === role.role)?.[0] || role.role;
+            if (roleAddressConfig[previousKey]) {
+                nextRoleAddressConfig[role.role] = roleAddressConfig[previousKey];
+            }
+        }
+        await saveSetting(c, CONSTANTS.ROLE_ADDRESS_CONFIG_KEY, JSON.stringify(nextRoleAddressConfig));
+
+        return c.json({ success: true });
+    },
     updateUserRoles: async (c: Context<HonoCustomType>) => {
         const msgs = i18n.getMessagesbyContext(c);
         const { user_id, role_text } = await c.req.json();
@@ -136,7 +247,7 @@ export default {
             }
             return c.json({ success: true })
         }
-        const user_roles = getUserRoles(c);
+        const user_roles = await getUserRoles(c);
         if (!user_roles.find((r) => r.role === role_text)) {
             return c.text(msgs.InvalidRoleTextMsg, 400)
         }

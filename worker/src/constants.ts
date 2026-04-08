@@ -15,6 +15,7 @@ export const CONSTANTS = {
     VERIFIED_ADDRESS_LIST_KEY: 'verified_address_list',
     NO_LIMIT_SEND_ADDRESS_LIST_KEY: 'no_limit_send_address_list',
     EMAIL_RULE_SETTINGS_KEY: 'email_rule_settings',
+    USER_ROLES_KEY: 'user_roles',
     ROLE_ADDRESS_CONFIG_KEY: 'role_address_config',
     IP_BLACKLIST_SETTINGS_KEY: 'ip_blacklist_settings',
     AI_EXTRACT_SETTINGS_KEY: 'ai_extract_settings',

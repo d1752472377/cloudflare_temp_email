@@ -93,8 +93,8 @@ const userRolesOptions = computed(() => {
 
 const fetchUserRoles = async () => {
     try {
-        const results = await api.fetch(`/admin/user_roles`);
-        userRoles.value = results;
+        const { roles } = await api.fetch(`/admin/roles`);
+        userRoles.value = roles;
     } catch (error) {
         console.log(error)
         message.error(error.message || "error");

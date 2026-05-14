@@ -5,7 +5,7 @@ import { Jwt } from 'hono/utils/jwt'
 
 import { api as commonApi } from './commom_api';
 import { api as openAuthApi } from './open_api/auth';
-import { openApi } from './open_api/mails';
+import { openApi, OPEN_API_PREFIX } from './open_api/mails';
 import { api as mailsApi } from './mails_api'
 import { api as userApi } from './user_api';
 import { api as adminApi } from './admin_api';
@@ -279,7 +279,7 @@ app.route('/', userApi)
 app.route('/', adminApi)
 app.route('/', apiSendMail)
 app.route('/', telegramApi)
-app.route('/', openApi)
+app.route(OPEN_API_PREFIX, openApi)
 
 const health_check = async (c: Context<HonoCustomType>) => {
 	const lang = c.req.raw.headers.get("x-lang") || c.env.DEFAULT_LANG;

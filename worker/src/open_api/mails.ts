@@ -14,7 +14,8 @@ import {
 import { HonoCustomType } from '../types';
 import { CONSTANTS } from '../constants';
 import { sendMail } from '../mails_api/send_mail_api';
-import { resolveRawEmailRow, RawMailRow } from '../models';
+import { RawMailRow } from '../models';
+import { resolveRawEmailRow } from '../gzip';
 
 const OPEN_API_PREFIX = '/external/api';
 

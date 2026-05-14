@@ -131,6 +131,10 @@ const messages: LocaleMessages = {
     InvalidIpBlacklistSettingMsg: "无效的 IP 黑名单设置",
     BlacklistExceedsMaxSizeMsg: "黑名单超出最大条目限制",
 
+    // External/Open API messages
+    ExternalAPIDisabledMsg: "外部 API 未配置, 请设置 OPEN_API_KEY",
+    ExternalAPIInvalidKeyMsg: "无效的 API 密钥",
+
     // Telegram bot messages
     TgUnableGetUserInfoMsg: "无法获取用户信息",
     TgNoPermissionMsg: "您没有权限使用此机器人",

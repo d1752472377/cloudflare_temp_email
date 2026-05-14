@@ -126,6 +126,10 @@ export type LocaleMessages = {
     InvalidIpBlacklistSettingMsg: string
     BlacklistExceedsMaxSizeMsg: string
 
+    // External/Open API messages
+    ExternalAPIDisabledMsg: string
+    ExternalAPIInvalidKeyMsg: string
+
     // Telegram bot messages
     TgUnableGetUserInfoMsg: string
     TgNoPermissionMsg: string

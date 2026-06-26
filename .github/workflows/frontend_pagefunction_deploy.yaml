@@ -50,6 +50,8 @@ jobs:
           cd frontend/
           pnpm install --no-frozen-lockfile
           pnpm build:pages
+          # Copy Pages Functions into the build output so they are deployed together
+          cp -r ../pages/functions dist/functions
           cd ../pages/
           echo '${{ secrets.PAGE_TOML }}' > wrangler.toml
           pnpm install --no-frozen-lockfile

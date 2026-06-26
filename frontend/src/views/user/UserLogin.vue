@@ -1,7 +1,6 @@
 ﻿<script setup>
 import { computed, ref } from 'vue'
 import { useMessage } from 'naive-ui'
-import { useScopedI18n } from '@/i18n/app'
 import { KeyFilled } from '@vicons/material'
 import { startAuthentication } from '@simplewebauthn/browser'
 
@@ -16,8 +15,6 @@ const {
   jwt, addressPassword,
 } = useGlobalState()
 const message = useMessage()
-
-const { t } = useScopedI18n('views.user.UserLogin')
 
 const tabValue = ref('signin')
 const showModal = ref(false)

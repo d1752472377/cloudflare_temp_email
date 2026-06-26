@@ -1,3 +1,4 @@
+<script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useScopedI18n } from '@/i18n/app'
 import { useRoute, useRouter } from 'vue-router'

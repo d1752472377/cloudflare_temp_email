@@ -1,7 +1,7 @@
 <script setup>
 import { watch, onMounted, ref, onBeforeUnmount, computed } from 'vue'
 import { useMessage } from 'naive-ui'
-import { useScopedI18n } from '@/i18n/app'
+import { useI18n } from 'vue-i18n'
 import { useGlobalState } from '../store'
 import {
   CloudDownloadRound,

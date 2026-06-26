@@ -182,9 +182,21 @@ export const MESSAGE_REGISTRY = {
       "en": "Forward",
       "zh": "转发"
     },
+    "from": {
+      "en": "From",
+      "zh": "发件人"
+    },
     "fullscreen": {
       "en": "Fullscreen",
       "zh": "全屏"
+    },
+    "messageId": {
+      "en": "Message ID",
+      "zh": "邮件ID"
+    },
+    "received": {
+      "en": "Received",
+      "zh": "收件时间"
     },
     "reply": {
       "en": "Reply",
@@ -205,6 +217,10 @@ export const MESSAGE_REGISTRY = {
     "size": {
       "en": "Size",
       "zh": "大小"
+    },
+    "to": {
+      "en": "To",
+      "zh": "收件人"
     }
   },
   "components.Turnstile": {
@@ -449,6 +465,38 @@ export const MESSAGE_REGISTRY = {
     "webhookSettings": {
       "en": "Webhook Settings",
       "zh": "Webhook 设置"
+    },
+    "apiDocs": {
+      "en": "API Docs",
+      "zh": "API 文档"
+    },
+    "copyright": {
+      "en": "Copyright",
+      "zh": "版权所有"
+    },
+    "faq": {
+      "en": "FAQ",
+      "zh": "常见问题"
+    },
+    "github": {
+      "en": "GitHub",
+      "zh": "GitHub"
+    },
+    "navSupport": {
+      "en": "Support",
+      "zh": "帮助与支持"
+    },
+    "noUpdates": {
+      "en": "No updates available",
+      "zh": "暂无更新"
+    },
+    "privacy": {
+      "en": "Privacy",
+      "zh": "隐私政策"
+    },
+    "updateNotice": {
+      "en": "Update Notice",
+      "zh": "更新公告"
     }
   },
   "views.Footer": {
@@ -715,6 +763,10 @@ export const MESSAGE_REGISTRY = {
     "workerconfig": {
       "en": "Worker Config",
       "zh": "Worker 配置"
+    },
+    "roleManagement": {
+      "en": "Role Management",
+      "zh": "角色管理"
     }
   },
   "views.User": {
@@ -933,6 +985,38 @@ export const MESSAGE_REGISTRY = {
     "success": {
       "en": "Success",
       "zh": "成功"
+    },
+    "dangerZone": {
+      "en": "Danger Zone",
+      "zh": "危险区域"
+    },
+    "dangerZoneDesc": {
+      "en": "Delete account and all associated data",
+      "zh": "删除账户及所有关联数据"
+    },
+    "dataManagement": {
+      "en": "Data Management",
+      "zh": "数据管理"
+    },
+    "dataManagementDesc": {
+      "en": "Clear inbox and sent items",
+      "zh": "清空收件箱、发件箱"
+    },
+    "mailboxInfo": {
+      "en": "Mailbox Info",
+      "zh": "邮箱信息"
+    },
+    "mailboxInfoDesc": {
+      "en": "Mailbox account info and credentials",
+      "zh": "邮箱账户信息与凭证"
+    },
+    "session": {
+      "en": "Session",
+      "zh": "会话"
+    },
+    "sessionDesc": {
+      "en": "Password change and logout",
+      "zh": "密码修改、退出登录"
     }
   },
   "views.user.UserOauth2Callback": {
@@ -1207,6 +1291,58 @@ export const MESSAGE_REGISTRY = {
     "userLogin": {
       "en": "User Login",
       "zh": "用户登录"
+    },
+    "appearance": {
+      "en": "Appearance",
+      "zh": "外观"
+    },
+    "copyAddress": {
+      "en": "Address copied",
+      "zh": "地址已复制"
+    },
+    "createNewMailboxAccount": {
+      "en": "Create New",
+      "zh": "创建新邮箱"
+    },
+    "inboxAddress": {
+      "en": "Inbox",
+      "zh": "收件箱"
+    },
+    "loginAnotherMailboxAccount": {
+      "en": "Login Another",
+      "zh": "登录其他邮箱"
+    },
+    "mailboxAccount": {
+      "en": "Mailbox Account",
+      "zh": "邮箱账户"
+    },
+    "mailboxEmail": {
+      "en": "Email",
+      "zh": "邮箱地址"
+    },
+    "mailboxPasswordLabel": {
+      "en": "Password",
+      "zh": "密码"
+    },
+    "notAvailable": {
+      "en": "Not available",
+      "zh": "暂无"
+    },
+    "simpleMode": {
+      "en": "Simple Mode",
+      "zh": "极简模式"
+    },
+    "status": {
+      "en": "Status",
+      "zh": "状态"
+    },
+    "userSettings": {
+      "en": "User Settings",
+      "zh": "用户设置"
+    },
+    "workspace": {
+      "en": "Workspace",
+      "zh": "工作区"
     }
   },
   "views.admin.SendBox": {
@@ -2525,6 +2661,26 @@ export const MESSAGE_REGISTRY = {
     "randomSubdomainTip": {
       "en": "When enabled, the created address will use a random subdomain. Recommended for receiving only. Requires a wildcard MX DNS record on the base domain — see the random subdomain docs.",
       "zh": "启用后，创建出来的地址会自动挂在随机子域名下，建议仅用于收件。需要在基础域名 DNS 中配置通配 MX 记录，详见随机子域名文档。"
+    },
+    "helpText": {
+      "en": "Need help? Contact the administrator.",
+      "zh": "需要帮助？请联系管理员。"
+    },
+    "loginDesc": {
+      "en": "Sign in to your existing mailbox account",
+      "zh": "登录到你的邮箱账户"
+    },
+    "loginTitle": {
+      "en": "Login",
+      "zh": "登录"
+    },
+    "registerDesc": {
+      "en": "Create a new mailbox account",
+      "zh": "创建新的邮箱账户"
+    },
+    "registerTitle": {
+      "en": "Register",
+      "zh": "注册"
     }
   },
   "views.admin.Webhook": {

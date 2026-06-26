@@ -1,6 +1,5 @@
-<script setup>
 import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { useScopedI18n } from '@/i18n/app'
 import {
   CloudDownloadRound,
   ReplyFilled,
@@ -17,44 +16,7 @@ import { useGlobalState } from '../store'
 
 const { preferShowTextMail, useIframeShowMail, useUTCDate, isDark } = useGlobalState()
 
-const { t } = useI18n({
-  messages: {
-    en: {
-      delete: 'Delete',
-      deleteMailTip: 'Are you sure you want to delete mail?',
-      attachments: 'Attachments',
-      downloadMail: 'Download .eml',
-      reply: 'Reply',
-      forward: 'Forward',
-      showTextMail: 'Text',
-      showHtmlMail: 'HTML',
-      saveToS3: 'Save to S3',
-      size: 'Size',
-      fullscreen: 'Fullscreen',
-      from: 'From',
-      to: 'To',
-      received: 'Received',
-      messageId: 'Message ID',
-    },
-    zh: {
-      delete: '删除',
-      deleteMailTip: '确定要删除邮件吗?',
-      attachments: '附件',
-      downloadMail: '下载 .eml',
-      reply: '回复',
-      forward: '转发',
-      showTextMail: '文本',
-      showHtmlMail: 'HTML',
-      saveToS3: '保存到S3',
-      size: '大小',
-      fullscreen: '全屏',
-      from: '发件人',
-      to: '收件地址',
-      received: '接收时间',
-      messageId: '邮件 ID',
-    },
-  },
-})
+const { t } = useScopedI18n('components.MailContentRenderer')
 
 const props = defineProps({
   mail: {

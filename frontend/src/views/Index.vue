@@ -1,6 +1,6 @@
 <script setup>
 import { defineAsyncComponent, computed, onMounted, ref, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { useScopedI18n } from '@/i18n/app'
 import { useRoute } from 'vue-router'
 import {
   MailOutline,
@@ -48,58 +48,7 @@ const SendMail = defineAsyncComponent(() => {
   })
 })
 
-const { t } = useI18n({
-  messages: {
-    en: {
-      mailbox: 'Inbox',
-      sendbox: 'Sent',
-      sendmail: 'Compose',
-      auto_reply: 'Auto Reply',
-      accountSettings: 'Account',
-      appearance: 'Appearance',
-      about: 'About',
-      s3Attachment: 'Attachments',
-      saveToS3Success: 'save to s3 success',
-      webhookSettings: 'Webhook',
-      query: 'Query',
-      enterSimpleMode: 'Simple Mode',
-      appName: 'Temp Mail',
-      navTitle: 'Workspace',
-      navSupport: 'Resources',
-      updateNotice: 'Update Notice',
-      apiDocs: 'API Docs',
-      faq: 'FAQ',
-      privacy: 'Privacy',
-      github: 'GitHub',
-      copyright: 'Copyright',
-      noUpdates: 'No update notice',
-    },
-    zh: {
-      mailbox: '收件箱',
-      sendbox: '发件箱',
-      sendmail: '写邮件',
-      auto_reply: '自动回复',
-      accountSettings: '账户',
-      appearance: '外观',
-      about: '关于',
-      s3Attachment: '附件',
-      saveToS3Success: '保存到s3成功',
-      webhookSettings: 'Webhook',
-      query: '查询',
-      enterSimpleMode: '极简模式',
-      appName: '临时邮件',
-      navTitle: '工作区',
-      navSupport: '资源链接',
-      updateNotice: '更新通知',
-      apiDocs: 'API 文档',
-      faq: '常见问题',
-      privacy: '隐私政策',
-      github: 'GitHub',
-      copyright: '版权所有',
-      noUpdates: '暂无更新通知',
-    },
-  },
-})
+const { t } = useScopedI18n('views.Index')
 
 const fetchMailData = async (limit, offset) => {
   if (mailIdQuery.value > 0) {

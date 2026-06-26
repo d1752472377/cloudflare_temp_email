@@ -1,6 +1,5 @@
-<script setup>
 import { computed, onMounted, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { useScopedI18n } from '@/i18n/app'
 import { useRoute, useRouter } from 'vue-router'
 import { User, ExchangeAlt, Copy } from '@vicons/fa'
 import {
@@ -53,59 +52,7 @@ const {
   showAdminPage,
 } = useGlobalState()
 
-const { locale, t } = useI18n({
-  messages: {
-    en: {
-      ok: 'OK',
-      fetchAddressError:
-        'Mail address credential is invalid or account not exist, it may be network connection issue, please try again later.',
-      addressCredential: 'Mailbox Credential',
-      linkWithAddressCredential: 'Open to auto login email link',
-      addressCredentialTip: 'Please save the mailbox credential if you need a direct login token.',
-      addressPassword: 'Address Password',
-      userLogin: 'User Login',
-      addressManage: 'Manage',
-      copyAddress: 'Copy address',
-      simpleMode: 'Simple Mode',
-      workspace: 'Mailbox Workspace',
-      appearance: 'Appearance',
-      status: 'Status',
-      inboxAddress: 'Current mailbox',
-      mailboxAccount: 'Mailbox Account',
-      mailboxEmail: 'Mailbox Email',
-      mailboxPasswordLabel: 'Mailbox Password',
-      loginAnotherMailboxAccount: 'Login Another Mailbox Account',
-      createNewMailboxAccount: 'Create New Mailbox Account',
-      userSettings: 'User Settings',
-      notAvailable: 'Not available',
-    },
-    zh: {
-      ok: '\u786e\u5b9a',
-      fetchAddressError:
-        '\u90ae\u7bb1\u51ed\u8bc1\u65e0\u6548\u6216\u8d26\u53f7\u4e0d\u5b58\u5728\uff0c\u4e5f\u53ef\u80fd\u662f\u7f51\u7edc\u8fde\u63a5\u5f02\u5e38\uff0c\u8bf7\u7a0d\u540e\u518d\u5c1d\u8bd5\u3002',
-      addressCredential: '\u90ae\u7bb1\u51ed\u636e',
-      linkWithAddressCredential: '\u6253\u5f00\u5373\u53ef\u81ea\u52a8\u767b\u5f55\u90ae\u7bb1\u7684\u94fe\u63a5',
-      addressCredentialTip:
-        '\u5982\u679c\u4f60\u9700\u8981\u76f4\u63a5\u767b\u5f55\u4ee4\u724c\uff0c\u8bf7\u4fdd\u5b58\u597d\u90ae\u7bb1\u51ed\u636e\u3002',
-      addressPassword: '\u5730\u5740\u5bc6\u7801',
-      userLogin: '\u7528\u6237\u767b\u5f55',
-      addressManage: '\u7ba1\u7406',
-      copyAddress: '\u590d\u5236\u5730\u5740',
-      simpleMode: '\u6781\u7b80\u6a21\u5f0f',
-      workspace: '\u90ae\u7bb1\u5de5\u4f5c\u533a',
-      appearance: '\u5916\u89c2',
-      status: '\u72b6\u6001',
-      inboxAddress: '\u5f53\u524d\u90ae\u7bb1',
-      mailboxAccount: '\u90ae\u7bb1\u8d26\u6237',
-      mailboxEmail: '\u90ae\u7bb1\u5730\u5740',
-      mailboxPasswordLabel: '\u90ae\u7bb1\u5bc6\u7801',
-      loginAnotherMailboxAccount: '\u767b\u5f55\u5176\u4ed6\u90ae\u7bb1\u8d26\u6237',
-      createNewMailboxAccount: '\u521b\u5efa\u65b0\u90ae\u7bb1\u8d26\u6237',
-      userSettings: '\u7528\u6237\u8bbe\u7f6e',
-      notAvailable: '\u672a\u4fdd\u5b58',
-    },
-  },
-})
+const { locale, t } = useScopedI18n('views.index.AddressBar')
 
 const showAddressManage = ref(false)
 
@@ -173,7 +120,6 @@ onMounted(async () => {
         <div class="workspace-title-group">
           <div class="workspace-title">{{ headerTitle }}</div>
         </div>
-
         <button class="address-pill" @click="copyAddress">
           <span class="address-pill-label">{{ t('inboxAddress') }}</span>
           <span class="address-pill-value">{{ settings.address }}</span>

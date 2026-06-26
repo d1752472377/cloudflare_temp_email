@@ -1,6 +1,8 @@
-﻿<script setup>
-import { darkTheme, NGlobalStyle, zhCN } from 'naive-ui'
-import { computed, onMounted } from 'vue'
+<script setup>
+import {
+  darkTheme,
+} from 'naive-ui'
+import { computed, onMounted, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
 import { useScript } from '@unhead/vue'
 import { useI18n } from 'vue-i18n'
@@ -10,17 +12,19 @@ import Header from './views/Header.vue'
 import Footer from './views/Footer.vue'
 import UserLogin from './views/user/UserLogin.vue'
 import { api } from './api'
+import { getNaiveLocaleConfig } from './i18n/naive-locale'
+import { DEFAULT_LOCALE, isSupportedLocale } from './i18n/utils'
 
 const {
   isDark, loading, useSideMargin, telegramApp, isTelegram,
   openSettings, userSettings,
 } = useGlobalState()
-const adClient = import.meta.env.VITE_GOOGLE_AD_CLIENT
-const adSlot = import.meta.env.VITE_GOOGLE_AD_SLOT
-const { locale } = useI18n({})
+const adClient = import.meta.env.VITE_GOOGLE_AD_CLIENT;
+const adSlot = import.meta.env.VITE_GOOGLE_AD_SLOT;
+const { locale } = useI18n({ useScope: 'global' });
 const route = useRoute()
-const theme = computed(() => (isDark.value ? darkTheme : null))
-const localeConfig = computed(() => (locale.value === 'zh' ? zhCN : null))
+const theme = computed(() => isDark.value ? darkTheme : null)
+const localeConfig = computed(() => getNaiveLocaleConfig(isSupportedLocale(locale.value) ? locale.value : DEFAULT_LOCALE))
 const isMobile = useIsMobile()
 const themeOverrides = computed(() => ({
   common: {
@@ -81,6 +85,12 @@ const gateCopy = computed(() => (
     }
 ))
 
+watchEffect(() => {
+  if (typeof document === 'undefined') return
+  document.documentElement.lang = isSupportedLocale(locale.value) ? locale.value : DEFAULT_LOCALE
+})
+
+// Load Google Ad script at top level (not inside onMounted)
 if (showAd.value) {
   useScript({
     src: `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adClient}`,
@@ -132,7 +142,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <n-config-provider :locale="localeConfig" :theme="theme" :theme-overrides="themeOverrides">
+  <n-config-provider :locale="localeConfig.locale" :date-locale="localeConfig.dateLocale" :theme="theme" :theme-overrides="themeOverrides">
     <n-global-style />
     <n-spin description="loading..." :show="loading">
       <n-notification-provider container-style="margin-top: 60px;">
@@ -207,6 +217,16 @@ onMounted(async () => {
 .n-switch {
   margin-left: 10px;
   margin-right: 10px;
+}
+
+@media (hover: none) and (pointer: coarse) and (max-width: 1024px) {
+  :where(input, textarea, select, [contenteditable="true"]) {
+    font-size: 16px !important;
+  }
+
+  :where(.n-input, .n-input-number, .n-base-selection, .n-input-group-label) {
+    --n-font-size: 16px !important;
+  }
 }
 </style>
 

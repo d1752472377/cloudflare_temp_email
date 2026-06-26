@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { useScopedI18n } from '@/i18n/app'
 import { useRouter } from 'vue-router'
 
 import { useGlobalState } from '../../store'
@@ -20,60 +20,7 @@ const showClearSentItems = ref(false)
 const showChangePassword = ref(false)
 const newPassword = ref('')
 const confirmPassword = ref('')
-const { locale, t } = useI18n({
-  messages: {
-    en: {
-      logout: 'Logout',
-      deleteAccount: 'Delete Account',
-      showAddressCredential: 'Show Address Credential',
-      logoutConfirm: 'Are you sure to logout?',
-      deleteAccountConfirm: 'Are you sure to delete your account and all emails for this account?',
-      clearInbox: 'Clear Inbox',
-      clearSentItems: 'Clear Sent Items',
-      clearInboxConfirm: 'Are you sure to clear all emails in your inbox?',
-      clearSentItemsConfirm: 'Are you sure to clear all emails in your sent items?',
-      success: 'Success',
-      changePassword: 'Change Password',
-      newPassword: 'New Password',
-      confirmPassword: 'Confirm Password',
-      passwordMismatch: 'Passwords do not match',
-      passwordChanged: 'Password changed successfully',
-      mailboxInfo: 'Mailbox Info',
-      mailboxInfoDesc: 'View credentials or update your mailbox password.',
-      dataManagement: 'Data Management',
-      dataManagementDesc: 'Clean inbox or sent mail without leaving the current session.',
-      session: 'Session',
-      sessionDesc: 'Logout from the current mailbox session.',
-      dangerZone: 'Danger Zone',
-      dangerZoneDesc: 'These operations are destructive and cannot be undone.',
-    },
-    zh: {
-      logout: '退出登录',
-      deleteAccount: '删除账户',
-      showAddressCredential: '查看邮箱地址凭证',
-      logoutConfirm: '确定要退出登录吗？',
-      deleteAccountConfirm: '确定要删除你的账户和其中的所有邮件吗?',
-      clearInbox: '清空收件箱',
-      clearSentItems: '清空发件箱',
-      clearInboxConfirm: '确定要清空你收件箱中的所有邮件吗？',
-      clearSentItemsConfirm: '确定要清空你发件箱中的所有邮件吗？',
-      success: '成功',
-      changePassword: '修改密码',
-      newPassword: '新密码',
-      confirmPassword: '确认密码',
-      passwordMismatch: '密码不匹配',
-      passwordChanged: '密码修改成功',
-      mailboxInfo: '邮箱信息',
-      mailboxInfoDesc: '查看邮箱凭据或修改邮箱密码。',
-      dataManagement: '数据管理',
-      dataManagementDesc: '清空收件箱或发件箱，不影响当前登录状态。',
-      session: '会话',
-      sessionDesc: '退出当前邮箱登录会话。',
-      dangerZone: '危险区域',
-      dangerZoneDesc: '以下操作具有破坏性且不可撤销。',
-    },
-  },
-})
+const { locale, t } = useScopedI18n('views.index.AccountSettings')
 
 const logout = async () => {
   jwt.value = ''
@@ -301,4 +248,6 @@ const changePassword = async () => {
     grid-template-columns: 1fr;
   }
 }
+}
+
 </style>

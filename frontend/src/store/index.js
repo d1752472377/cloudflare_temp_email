@@ -39,8 +39,22 @@ export const useGlobalState = createGlobalState(
             isS3Enabled: false,
             enableSendMail: false,
             showGithub: true,
+            showGithubForUser: true,
             disableAdminPasswordCheck: false,
             enableAddressPassword: false,
+            enableAgentEmailInfo: false,
+            smtpImapProxyConfig: {
+                smtp: {
+                    host: '',
+                    port: 8025,
+                    starttls: false,
+                },
+                imap: {
+                    host: '',
+                    port: 11143,
+                    starttls: false,
+                },
+            },
             statusUrl: '',
             enableGlobalTurnstileCheck: false,
         })
@@ -78,6 +92,7 @@ export const useGlobalState = createGlobalState(
         const useIframeShowMail = useStorage('useIframeShowMail', false);
         const preferShowTextMail = useStorage('preferShowTextMail', false);
         const userJwt = useStorage('userJwt', '');
+        const preferredLocale = useStorage('preferredLocale', '');
         const userTab = useSessionStorage('userTab', 'address_management');
         const indexTab = useSessionStorage('indexTab', 'mailbox');
         const globalTabplacement = useStorage('globalTabplacement', 'top');
@@ -149,6 +164,7 @@ export const useGlobalState = createGlobalState(
             useIframeShowMail,
             preferShowTextMail,
             userJwt,
+            preferredLocale,
             userTab,
             indexTab,
             userOpenSettings,

@@ -1,7 +1,7 @@
 <script setup>
 import { watch, onMounted, ref, onBeforeUnmount, computed } from 'vue'
 import { useMessage } from 'naive-ui'
-import { useI18n } from 'vue-i18n'
+import { useScopedI18n } from '@/i18n/app'
 import { useGlobalState } from '../store'
 import {
   CloudDownloadRound,
@@ -261,6 +261,7 @@ const showMultiActionDownload = ref(false)
 const showMultiActionDelete = ref(false)
 const multiActionDownloadZip = ref({})
 const multiActionDeleteProgress = ref({ percentage: 0, tip: '0/0' })
+
 
 const multiActionModeClick = (enableMulti) => {
   data.value.forEach((item) => {
